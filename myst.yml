@@ -1,0 +1,8 @@
+version: 1
+project:
+  title: Auditoría de Glosas - Clínica Porvenir
+  author: David Florez Diaz
+  index: notebook/01_data_exploration.ipynb
+
+site:
+  template: book-theme
