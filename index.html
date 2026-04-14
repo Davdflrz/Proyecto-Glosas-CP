@@ -3,7 +3,7 @@
 <html lang="en">
 <head><meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>01_data_exploration</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>index</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <style type="text/css">
     pre { line-height: 125%; }
 td.linenos .normal { color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px; }
@@ -7817,7 +7817,7 @@ Los datos utilizados para este proyecto provienen del sistema de información tr
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [81]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
@@ -7827,6 +7827,8 @@ Los datos utilizados para este proyecto provienen del sistema de información tr
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">'ignore'</span><span class="p">)</span> 
 </pre></div>
 </div>
 </div>
@@ -8046,18 +8048,16 @@ Los datos utilizados para este proyecto provienen del sistema de información tr
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [83]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># 1. Definimos el patrón para extraer los números de Años, Meses y Días</span>
-<span class="c1"># Usamos una expresión regular (regex) para capturar los dígitos (\d+)</span>
 <span class="n">regex_patron</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">'(\d+)\s*Años\s*</span><span class="se">\\</span><span class="s1">\s*(\d+)\s*Meses\s*</span><span class="se">\\</span><span class="s1">\s*(\d+)\s*Días'</span>
 
-<span class="c1"># 2. Extraemos la información a un DataFrame temporal</span>
+<span class="c1"># 2. Extraemos la información</span>
 <span class="n">ext_edad</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">regex_patron</span><span class="p">)</span>
 
 <span class="c1"># 3. Creamos las nuevas columnas convirtiéndolas a números enteros</span>
-<span class="c1"># Rellenamos con 0 si algún dato falta o está mal escrito</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'Anos'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">ext_edad</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">'coerce'</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'Meses'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">ext_edad</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">'coerce'</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'Dias'</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">ext_edad</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s1">'coerce'</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -8067,7 +8067,7 @@ Los datos utilizados para este proyecto provienen del sistema de información tr
 <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Anos'</span><span class="p">]</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"Limpieza completada: Se crearon las columnas 'Anos', 'Meses' y 'Dias'."</span><span class="p">)</span>
-<span class="c1"># Verificamos los primeros resultados</span>
+
 <span class="n">df</span><span class="p">[[</span><span class="s1">'Anos'</span><span class="p">,</span> <span class="s1">'Meses'</span><span class="p">,</span> <span class="s1">'Dias'</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -8086,7 +8086,7 @@ Los datos utilizados para este proyecto provienen del sistema de información tr
 </div>
 </div>
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
-<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[83]:</div>
+<div class="jp-OutputPrompt jp-OutputArea-prompt">Out[ ]:</div>
 <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html" tabindex="0">
 <div>
 <style scoped="">
@@ -8396,19 +8396,14 @@ La variable PacienteEdad presenta una media de ~40 años y mediana de 31 años. 
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [85]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># =========================================================</span>
-<span class="c1"># TABLA DE ESTADÍSTICOS DESCRIPTIVOS</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># Seleccionamos solo las dos variables numéricas importantes</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Seleccionamos solo las dos variables numéricas importantes</span>
 <span class="n">columnas_stats</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">,</span> <span class="s1">'TotSer'</span><span class="p">]</span>
 
-<span class="c1"># Generamos la tabla, la redondeamos a 2 decimales para que se vea elegante</span>
 <span class="n">tabla_estadisticos</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columnas_stats</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 
-<span class="c1"># Imprimimos la tabla</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"📊 Tabla de Estadísticos Descriptivos:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span><span class="o">*</span><span class="mi">50</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">tabla_estadisticos</span><span class="p">)</span>
@@ -8457,16 +8452,10 @@ El histograma de PacienteEdad refleja una concentración poblacional en la prime
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [86]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS UNIDIMENSIONAL: HISTOGRAMA DE EDAD</span>
-<span class="c1"># =========================================================</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📊 Generando Histograma de Edad...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"📊 Generando Histograma de Edad...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
@@ -8480,7 +8469,7 @@ El histograma de PacienteEdad refleja una concentración poblacional en la prime
     <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span>
 <span class="p">)</span>
 
-<span class="c1"># LA MAGIA: Líneas de referencia para la Media y la Mediana</span>
+<span class="c1"># Líneas de referencia para la Media y la Mediana</span>
 <span class="n">media_edad</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 <span class="n">mediana_edad</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">()</span>
 
@@ -8540,16 +8529,10 @@ Los Boxplots y el IQR detectaron múltiples valores atípicos superiores en TotS
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [87]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS UNIDIMENSIONAL: ASIMETRÍA Y CURTOSIS DEL DINERO</span>
-<span class="c1"># =========================================================</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"📈 Generando Distribución Financiera (Asimetría)...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"📈 Generando Distribución Financiera (Asimetría)...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
@@ -8572,7 +8555,7 @@ Los Boxplots y el IQR detectaron múltiples valores atípicos superiores en TotS
 
 <span class="c1"># Formateamos el eje X para que muestre números completos y no notación científica (ej. 1e7)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ticklabel_format</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s1">'plain'</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">'x'</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span> <span class="c1"># Rotamos un poquito los números para que se lean bien los millones</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span> 
 
 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">'y'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -8621,29 +8604,24 @@ Las frecuencias y gráficos de barras demuestran que el riesgo se concentra en E
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [88]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="c1"># 1. Cargar los datos</span>
-<span class="c1"># IMPORTANTE: Reemplaza con la ruta completa y la 'r' antes de las comillas</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># Cargar los datos</span>
 <span class="n">ruta_archivo</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"C:\Users\davfl\OneDrive\Desktop\Maestria en Analitica de Datos\Proyecto de Grado\Proyecto\data\raw\DataSet_Final_Unificado.xlsx"</span> 
 <span class="nb">print</span><span class="p">(</span><span class="s2">"⏳ Cargando el archivo Excel, esto puede tomar unos segundos...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="n">ruta_archivo</span><span class="p">)</span>
 
-<span class="c1"># 2. Limpieza de la columna Edad (Preparación para Machine Learning)</span>
+<span class="c1"># Limpieza de la columna Edad </span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"🧹 Limpiando la columna PacienteEdad..."</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="sa">r</span><span class="s1">'(\d+)'</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
 
-<span class="c1"># 3. Creación de la Variable Objetivo Matemática (1 y 0)</span>
+<span class="c1"># Creación de la Variable Objetivo Matemática (1 y 0)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"🎯 Creando la variable objetivo 'Estado_Glosa' para los algoritmos..."</span><span class="p">)</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'ValorObjetado'</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'ValorObjetado'</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> 
 <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">'ValorObjetado'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-<span class="c1"># 4. TU CÓDIGO: Resumen visual y porcentajes para el EDA</span>
+<span class="c1"># Resumen visual y porcentajes para el EDA</span>
 <span class="n">TARGET_COL</span> <span class="o">=</span> <span class="s1">'NombreTipoObjecion'</span>
 <span class="n">blancos</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 <span class="n">con_datos</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -8656,11 +8634,10 @@ Las frecuencias y gráficos de barras demuestran que el riesgo se concentra en E
 <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">45</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Total de registros analizados: </span><span class="si">{</span><span class="n">total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 5. TU CÓDIGO MEJORADO: Gráfico de la distribución</span>
+<span class="c1"># 5. Gráfico de la distribución</span>
 <span class="n">estado_glosa_text</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="s1">'Sin Glosa (No)'</span> <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="s1">'Glosada (Sí)'</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
-<span class="c1"># Añadí un borde negro (edgecolor) para que se vea más académico</span>
 <span class="n">estado_glosa_text</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">'bar'</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">[</span><span class="s1">'skyblue'</span><span class="p">,</span> <span class="s1">'salmon'</span><span class="p">],</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Distribución del Estado de las Glosas'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'Cantidad de Facturas'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
@@ -8726,25 +8703,17 @@ Se cruzó la variable objetivo (Estado_Glosa) contra la variable financiera (Tot
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [89]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS FINANCIERO: IMPACTO DEL VALOR (CORREGIDO)</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># Cambiamos a 'TotSer' porque es más seguro que tenga datos en todas las filas</span>
-<span class="n">columna_dinero</span> <span class="o">=</span> <span class="s1">'TotSer'</span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">columna_dinero</span> <span class="o">=</span> <span class="s1">'TotSer'</span> 
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"💰 Verificando datos financieros con la columna: </span><span class="si">{</span><span class="n">columna_dinero</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 1. Aseguramos desde cero que existan ambas etiquetas</span>
+<span class="c1"># Aseguramos desde cero que existan ambas etiquetas</span>
 <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Texto'</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">'ValorObjetado'</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">'Glosada'</span><span class="p">,</span> <span class="s1">'Limpia'</span><span class="p">)</span>
 
-<span class="c1"># 2. Filtramos valores &gt; 0 y quitamos nulos para la escala logarítmica</span>
+<span class="c1"># Filtramos valores &gt; 0 y quitamos nulos para la escala logarítmica</span>
 <span class="n">df_finanzas</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="p">[</span><span class="n">columna_dinero</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">columna_dinero</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
 <span class="c1"># DIAGNÓSTICO: Esto te imprimirá en consola si realmente tenemos datos de ambos</span>
@@ -8752,7 +8721,7 @@ Se cruzó la variable objetivo (Estado_Glosa) contra la variable financiera (Tot
 <span class="nb">print</span><span class="p">(</span><span class="n">df_finanzas</span><span class="p">[</span><span class="s1">'Estado_Texto'</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">45</span><span class="p">)</span>
 
-<span class="c1"># 3. Dibujamos el Boxplot</span>
+<span class="c1"># Dibujamos el Boxplot</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span>
@@ -8760,12 +8729,12 @@ Se cruzó la variable objetivo (Estado_Glosa) contra la variable financiera (Tot
     <span class="n">x</span><span class="o">=</span><span class="s1">'Estado_Texto'</span><span class="p">,</span> 
     <span class="n">y</span><span class="o">=</span><span class="n">columna_dinero</span><span class="p">,</span> 
     <span class="n">palette</span><span class="o">=</span><span class="s1">'Set2'</span><span class="p">,</span>
-    <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s1">'Limpia'</span><span class="p">,</span> <span class="s1">'Glosada'</span><span class="p">],</span> <span class="c1"># ¡EL TRUCO! Obliga a pintar ambos lados</span>
+    <span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="s1">'Limpia'</span><span class="p">,</span> <span class="s1">'Glosada'</span><span class="p">],</span> 
     <span class="n">hue</span><span class="o">=</span><span class="s1">'Estado_Texto'</span><span class="p">,</span>
     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 
-<span class="c1"># 4. Escala logarítmica</span>
+<span class="c1"># Escala logarítmica</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">'log'</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'¿Influye el monto de la factura en la Glosa?'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">'bold'</span><span class="p">)</span>
@@ -8825,35 +8794,31 @@ Se cruzó la variable objetivo binaria con las dimensiones operativas clave. Los
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [90]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span> 
-
-<span class="c1"># 1. Filtramos: Solo queremos analizar las facturas que SÍ fueron glosadas</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># 1. Filtramos: Solo queremos analizar las facturas que SÍ fueron glosadas</span>
 <span class="n">df_solo_glosas</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
 <span class="n">TARGET_COL</span> <span class="o">=</span> <span class="s1">'NombreObjeción'</span>
 
-<span class="c1"># 2. Tu código de consola (Porcentajes)</span>
+<span class="c1"># Tu código de consola (Porcentajes)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">📊 --- TOP MOTIVOS DE GLOSA (Solo facturas objetadas) --- 📊"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
 <span class="n">conteos</span> <span class="o">=</span> <span class="n">df_solo_glosas</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 <span class="n">porcentajes</span> <span class="o">=</span> <span class="n">df_solo_glosas</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="c1"># Juntamos conteo y porcentaje para que se vea hermoso en la consola</span>
 <span class="n">resumen_objeciones</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">'Cantidad'</span><span class="p">:</span> <span class="n">conteos</span><span class="p">,</span> <span class="s1">'Porcentaje (%)'</span><span class="p">:</span> <span class="n">porcentajes</span><span class="p">})</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">resumen_objeciones</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span> <span class="c1"># Mostramos solo el Top 10</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">resumen_objeciones</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span><span class="o">*</span><span class="mi">60</span><span class="p">)</span>
 
-<span class="c1"># 3. Tu Gráfico Mejorado (Horizontal para textos largos)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="c1"># Un poco más grande</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> 
 
 <span class="c1"># Usamos y=TARGET_COL para que sea horizontal, y lo ordenamos de mayor a menor</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">df_solo_glosas</span><span class="p">,</span> 
     <span class="n">y</span><span class="o">=</span><span class="n">TARGET_COL</span><span class="p">,</span> 
-    <span class="n">order</span><span class="o">=</span><span class="n">df_solo_glosas</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="c1"># Top 10 motivos</span>
-    <span class="n">palette</span><span class="o">=</span><span class="s1">'Reds_r'</span><span class="p">,</span> <span class="c1"># Paleta roja (porque son errores/glosas)</span>
+    <span class="n">order</span><span class="o">=</span><span class="n">df_solo_glosas</span><span class="p">[</span><span class="n">TARGET_COL</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">index</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> 
+    <span class="n">palette</span><span class="o">=</span><span class="s1">'Reds_r'</span><span class="p">,</span> 
     <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span>
 <span class="p">)</span>
 
@@ -8919,41 +8884,34 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [91]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS DE RIESGO: TASA DE GLOSA POR PLAN DE BENEFICIOS</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># ¡El gran cambio! Usamos el detalle del plan, no la razón social general</span>
-<span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'PlanBenNombre'</span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'PlanBenNombre'</span> 
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"📊 Analizando el Riesgo de Glosa por: </span><span class="si">{</span><span class="n">columna_analisis</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 1. Tomamos los planes con más volumen de facturas</span>
+<span class="c1"># Tomamos los planes con más volumen de facturas</span>
 <span class="n">top_10_entidades</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
 <span class="n">df_top</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">top_10_entidades</span><span class="p">)]</span>
 
-<span class="c1"># 2. Calculamos el % de glosa (probabilidad de que te rechacen la cuenta)</span>
+<span class="c1"># Calculamos el % de glosa (probabilidad de que te rechacen la cuenta)</span>
 <span class="n">tasa_glosa</span> <span class="o">=</span> <span class="n">df_top</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">columna_analisis</span><span class="p">)[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="c1"># 3. Gráfico Vertical (Como lo pediste)</span>
+<span class="c1"># Gráfico Vertical </span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
 <span class="c1"># Al poner el index en 'x' y los values en 'y', las barras se vuelven verticales</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
     <span class="n">x</span><span class="o">=</span><span class="n">tasa_glosa</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> 
     <span class="n">y</span><span class="o">=</span><span class="n">tasa_glosa</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
-    <span class="n">hue</span><span class="o">=</span><span class="n">tasa_glosa</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="c1"># Añadimos hue para mantener los colores y evitar warnings</span>
+    <span class="n">hue</span><span class="o">=</span><span class="n">tasa_glosa</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> 
     <span class="n">palette</span><span class="o">=</span><span class="s1">'magma'</span><span class="p">,</span> 
     <span class="n">edgecolor</span><span class="o">=</span><span class="s1">'black'</span><span class="p">,</span>
     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 
-<span class="c1"># 4. Línea de promedio general de la clínica (Horizontal, axhline)</span>
+<span class="c1"># Línea de promedio general de la clínica (Horizontal, axhline)</span>
 <span class="n">promedio_gen</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">promedio_gen</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
             <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Promedio de la Clínica: </span><span class="si">{</span><span class="n">promedio_gen</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%'</span><span class="p">)</span>
@@ -8965,7 +8923,7 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <span class="c1"># Rotamos los textos de abajo a 45 grados para que no se choquen entre ellos</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">'right'</span><span class="p">)</span> 
 
-<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span> <span class="c1"># Ubicamos la leyenda arriba a la derecha</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span> 
 <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">'y'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.7</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
@@ -9000,30 +8958,22 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [92]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS DE RIESGO: TASA DE GLOSA POR SERVICIO / INSUMO</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># Revisa si en tu base de datos se llama 'ServicioNombre' o 'Actividad'</span>
-<span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'ServicioNombre'</span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'ServicioNombre'</span> 
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"📊 Analizando el Riesgo de Glosa por: </span><span class="si">{</span><span class="n">columna_analisis</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 1. Tomamos el Top 10 de los servicios/insumos más frecuentes</span>
-<span class="c1"># (Analizar los 10.000 servicios distintos colapsaría la gráfica)</span>
+<span class="c1"># Tomamos el Top 10 de los servicios/insumos más frecuentes</span>
 <span class="n">top_10_servicios</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
 <span class="n">df_top_servicios</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">top_10_servicios</span><span class="p">)]</span>
 
-<span class="c1"># 2. Calculamos el % de glosa (probabilidad de rechazo por ítem)</span>
+<span class="c1"># Calculamos el % de glosa (probabilidad de rechazo por ítem)</span>
 <span class="n">tasa_glosa_srv</span> <span class="o">=</span> <span class="n">df_top_servicios</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">columna_analisis</span><span class="p">)[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="c1"># 3. Gráfico Vertical</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="c1"># Un poco más ancho para los textos largos de los medicamentos</span>
+<span class="c1"># Gráfico Vertical</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> 
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
     <span class="n">x</span><span class="o">=</span><span class="n">tasa_glosa_srv</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> 
@@ -9034,7 +8984,7 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 
-<span class="c1"># 4. Línea de promedio general de la clínica</span>
+<span class="c1"># Línea de promedio general de la clínica</span>
 <span class="n">promedio_gen</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">promedio_gen</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
             <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Promedio: </span><span class="si">{</span><span class="n">promedio_gen</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%'</span><span class="p">)</span>
@@ -9043,7 +8993,6 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Servicio / Insumo'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'</span><span class="si">% F</span><span class="s1">acturas Glosadas'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
-<span class="c1"># Rotamos los textos a 45 grados porque los nombres de insumos son muy largos</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">'right'</span><span class="p">)</span> 
 
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span> 
@@ -9081,28 +9030,21 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [93]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS DE RIESGO: TASA DE GLOSA POR GRUPO DE SERVICIO</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># Verifica si en tu Excel se llama 'GrupoSerNombre' o 'NombreGrupoSer'</span>
-<span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'GrupoSerNombre'</span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'GrupoSerNombre'</span> 
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"📊 Analizando el Riesgo de Glosa por: </span><span class="si">{</span><span class="n">columna_analisis</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 1. Tomamos el Top 10 de las familias/grupos con más volumen</span>
+<span class="c1"># Tomamos el Top 10 de las familias/grupos con más volumen</span>
 <span class="n">top_10_grupos</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
 <span class="n">df_top_grupos</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">top_10_grupos</span><span class="p">)]</span>
 
-<span class="c1"># 2. Calculamos el % de glosa (probabilidad de rechazo por grupo)</span>
+<span class="c1"># Calculamos el % de glosa (probabilidad de rechazo por grupo)</span>
 <span class="n">tasa_glosa_grp</span> <span class="o">=</span> <span class="n">df_top_grupos</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">columna_analisis</span><span class="p">)[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="c1"># 3. Gráfico Vertical</span>
+<span class="c1"># Gráfico Vertical</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
@@ -9114,7 +9056,7 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 
-<span class="c1"># 4. Línea de promedio general de la clínica</span>
+<span class="c1"># Línea de promedio general de la clínica</span>
 <span class="n">promedio_gen</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">promedio_gen</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
             <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Promedio: </span><span class="si">{</span><span class="n">promedio_gen</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%'</span><span class="p">)</span>
@@ -9123,7 +9065,6 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Grupo de Servicio (Familia)'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'</span><span class="si">% F</span><span class="s1">acturas Glosadas'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
-<span class="c1"># Rotamos los textos a 45 grados para que las categorías largas encajen bien</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">'right'</span><span class="p">)</span> 
 
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span> 
@@ -9169,29 +9110,22 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [94]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS DE RIESGO: TASA DE GLOSA POR ÁREA (CENTRO DE COSTOS)</span>
-<span class="c1"># =========================================================</span>
-<span class="c1"># Verificamos la columna según tu imagen</span>
-<span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'AreaNombre'</span> 
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">columna_analisis</span> <span class="o">=</span> <span class="s1">'AreaNombre'</span> 
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"📊 Analizando el Riesgo de Glosa por: </span><span class="si">{</span><span class="n">columna_analisis</span><span class="si">}</span><span class="s2">...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># 1. Tomamos el Top 10 de las áreas con más volumen de facturas</span>
+<span class="c1"># Tomamos el Top 10 de las áreas con más volumen de facturas</span>
 <span class="n">top_10_areas</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span><span class="o">.</span><span class="n">nlargest</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">index</span>
 <span class="n">df_top_areas</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">columna_analisis</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">top_10_areas</span><span class="p">)]</span>
 
-<span class="c1"># 2. Calculamos el % de glosa (probabilidad de rechazo por área)</span>
+<span class="c1"># Calculamos el % de glosa (probabilidad de rechazo por área)</span>
 <span class="n">tasa_glosa_area</span> <span class="o">=</span> <span class="n">df_top_areas</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">columna_analisis</span><span class="p">)[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
 
-<span class="c1"># 3. Gráfico Vertical</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> <span class="c1"># Un poco más ancho para que los nombres de las áreas respiren</span>
+<span class="c1"># Gráfico Vertical</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span> 
 
 <span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span>
     <span class="n">x</span><span class="o">=</span><span class="n">tasa_glosa_area</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> 
@@ -9202,7 +9136,7 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
     <span class="n">legend</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 
-<span class="c1"># 4. Línea de promedio general de la clínica</span>
+<span class="c1"># Línea de promedio general de la clínica</span>
 <span class="n">promedio_gen</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">promedio_gen</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">'red'</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">'--'</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> 
             <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">'Promedio: </span><span class="si">{</span><span class="n">promedio_gen</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%'</span><span class="p">)</span>
@@ -9211,7 +9145,6 @@ Passing `palette` without assigning `hue` is deprecated and will be removed in v
 <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">'Área de Atención (Centro de Costos)'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">'</span><span class="si">% F</span><span class="s1">acturas Glosadas'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
 
-<span class="c1"># Rotamos los textos a 45 grados</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">rotation</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">'right'</span><span class="p">)</span> 
 
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">'upper right'</span><span class="p">)</span> 
@@ -9263,40 +9196,31 @@ El Heatmap de variables numéricas confirmó la ausencia de multicolinealidad pr
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [95]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">"🌡️ Generando Mapa de Calor de Correlación...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
-<span class="c1"># =========================================================</span>
-<span class="c1"># ANÁLISIS BIDIMENSIONAL: MAPA DE CALOR (CORRELACIÓN)</span>
-<span class="c1"># =========================================================</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"🌡️ Generando Mapa de Calor de Correlación...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="c1"># 1. Seleccionamos SOLO las variables numéricas</span>
-<span class="c1"># Si en tu base tienes alguna columna de cantidad, agrégala a esta lista</span>
+<span class="c1"># Seleccionamos SOLO las variables numéricas</span>
 <span class="n">columnas_numericas</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'PacienteEdad'</span><span class="p">,</span> <span class="s1">'TotSer'</span><span class="p">,</span> <span class="s1">'Estado_Glosa'</span><span class="p">]</span> 
 
 <span class="c1"># Evitamos errores filtrando solo las columnas que realmente existen en el df</span>
 <span class="n">cols_finales</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columnas_numericas</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 <span class="n">df_num</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols_finales</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-<span class="c1"># 2. Calculamos la matriz de correlación</span>
-<span class="c1"># Usamos Spearman porque explicamos en el Word que el dinero (TotSer) tiene asimetría</span>
+<span class="c1"># Calculamos la matriz de correlación</span>
 <span class="n">matriz_corr</span> <span class="o">=</span> <span class="n">df_num</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">'spearman'</span><span class="p">)</span> 
 
-<span class="c1"># 3. Dibujamos el Heatmap</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 
 <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span>
     <span class="n">matriz_corr</span><span class="p">,</span> 
-    <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>          <span class="c1"># Muestra los números adentro de los cuadros</span>
-    <span class="n">fmt</span><span class="o">=</span><span class="s2">".2f"</span><span class="p">,</span>           <span class="c1"># Muestra solo 2 decimales</span>
-    <span class="n">cmap</span><span class="o">=</span><span class="s1">'coolwarm'</span><span class="p">,</span>     <span class="c1"># Colores: azul (negativo), rojo (positivo)</span>
-    <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>     <span class="c1"># Rango estricto de correlación</span>
-    <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>      <span class="c1"># Líneas blancas separando los cuadros</span>
-    <span class="n">square</span><span class="o">=</span><span class="kc">True</span>          <span class="c1"># Hace que los cuadros sean cuadrados perfectos</span>
+    <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>         
+    <span class="n">fmt</span><span class="o">=</span><span class="s2">".2f"</span><span class="p">,</span>          
+    <span class="n">cmap</span><span class="o">=</span><span class="s1">'coolwarm'</span><span class="p">,</span>     
+    <span class="n">vmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>     
+    <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>      
+    <span class="n">square</span><span class="o">=</span><span class="kc">True</span>          
 <span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">'Matriz de Correlación de Variables Numéricas (Spearman)'</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">fontweight</span><span class="o">=</span><span class="s1">'bold'</span><span class="p">)</span>
@@ -9366,18 +9290,11 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [96]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">df_ml</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"🧹 FASE 1: Limpieza de Datos y Filtro Anti-Leakage Extremo...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="c1"># Hacemos una copia para no dañar el DataFrame original</span>
-<span class="n">df_ml</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
-<span class="c1"># ¡LISTA NEGRA DEFINITIVA! (Están TODOS los que descubrimos)</span>
 <span class="n">columnas_tramposas</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s1">'ValorObjetado'</span><span class="p">,</span> <span class="s1">'NombreTipoObjecion'</span><span class="p">,</span> <span class="s1">'NombreObjeción'</span><span class="p">,</span> <span class="s1">'Estado_Texto'</span><span class="p">,</span> <span class="s1">'es_glosa'</span><span class="p">,</span> 
     <span class="s1">'Factura'</span><span class="p">,</span> <span class="s1">'NOMBRE PACIENTE'</span><span class="p">,</span> <span class="s1">'Consecutivo'</span><span class="p">,</span> <span class="s1">'Oid'</span><span class="p">,</span> <span class="s1">'Identificacion'</span><span class="p">,</span> <span class="s1">'PacienteIdentificacion'</span><span class="p">,</span>
@@ -9386,11 +9303,11 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
     <span class="s1">'Factura_DiaSemana'</span><span class="p">,</span> <span class="s1">'Factura_Mes'</span><span class="p">,</span> <span class="s1">'Factura_Año'</span> <span class="c1"># &lt;--- Los que se nos habían colado de la memoria</span>
 <span class="p">]</span>
 
-<span class="c1"># 1. Borrar columnas tramposas</span>
+<span class="c1"># Borrar columnas tramposas</span>
 <span class="n">cols_a_borrar</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columnas_tramposas</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">df_ml</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
 <span class="n">df_ml</span> <span class="o">=</span> <span class="n">df_ml</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">cols_a_borrar</span><span class="p">)</span>
 
-<span class="c1"># 2. Borrar cualquier columna de fecha cruda</span>
+<span class="c1"># Borrar cualquier columna de fecha cruda</span>
 <span class="n">cols_fecha</span> <span class="o">=</span> <span class="n">df_ml</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">'datetime64'</span><span class="p">,</span> <span class="s1">'datetime64[ns]'</span><span class="p">,</span> <span class="s1">'&lt;M8[ns]'</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span>
 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols_fecha</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
     <span class="n">df_ml</span> <span class="o">=</span> <span class="n">df_ml</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">cols_fecha</span><span class="p">)</span>
@@ -9421,12 +9338,11 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [97]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_test_split</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"✂️ FASE 2: División de Datos (Train/Test Split)...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">X</span> <span class="o">=</span> <span class="n">df_ml</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">])</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">df_ml</span><span class="p">[</span><span class="s1">'Estado_Glosa'</span><span class="p">]</span>
@@ -9460,15 +9376,13 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [98]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.compose</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColumnTransformer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.impute</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleImputer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrdinalEncoder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"⚙️ FASE 3: Configuración del Preprocesador (Pipeline)...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">num_cols</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">'float64'</span><span class="p">,</span> <span class="s1">'int64'</span><span class="p">,</span> <span class="s1">'int32'</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 <span class="n">cat_cols</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s1">'object'</span><span class="p">])</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -9508,16 +9422,12 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [99]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.dummy</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummyClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.tree</span><span class="w"> </span><span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">classification_report</span><span class="p">,</span> <span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">roc_auc_score</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">"🧠 FASE 4: Entrenamiento y Evaluación de Modelos Base...</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
 <span class="n">modelos_base</span> <span class="o">=</span> <span class="p">{</span>
     <span class="s2">"Modelo Tonto (Baseline Absoluto)"</span><span class="p">:</span> <span class="n">DummyClassifier</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s2">"most_frequent"</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">),</span>
