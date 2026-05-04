@@ -9336,7 +9336,7 @@ CONSULTAS, INTERCONSULTASY VISITAS MEDICAS        47            0.12
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Hallazgos clave:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Resultados clave:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"  • No_Quirúrgico tiene la mayor tasa de glosa (~56%), superando el promedio institucional."</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"  • Cédula de Ciudadanía (adultos): tasa más alta (~48%); recién nacidos (CN): ~0%."</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"  • Esto sugiere que la edad y el tipo de atención son proxies de riesgo."</span><span class="p">)</span>
@@ -9432,7 +9432,7 @@ El Heatmap de variables numéricas confirmó la ausencia de multicolinealidad pr
 <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Hallazgos:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Resultados:"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  • Máxima correlación con Estado_Glosa: ValEnt=</span><span class="si">{</span><span class="n">df</span><span class="p">[[</span><span class="s1">'ValEnt'</span><span class="p">,</span><span class="s1">'Estado_Glosa'</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="s1">'spearman'</span><span class="p">)</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  • Ninguna variable numérica supera ρ=0.10 con la variable objetivo."</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">"  • TotSer ≈ ValEnt (r≈0.99): TotSer es redundante — ambas miden valor financiero."</span><span class="p">)</span>
@@ -9569,7 +9569,6 @@ La variable objetivo se definió como Estado_Glosa (1 = Glosada, 0 = Limpia). Lo
     <span class="s1">'MedicoNombre'</span><span class="p">,</span>
 
     <span class="c1"># NUEVOS: fuga por agrupacion (GroupKFold problem)</span>
-    <span class="c1"># Diagnostico: 100% de pacientes e ingresos tienen clase unica</span>
     <span class="c1"># y 99%+ aparecen en AMBOS train y test -&gt; memoracion, no aprendizaje</span>
     <span class="s1">'PacienteCodigo'</span><span class="p">,</span>      <span class="c1"># identificador de paciente — no generalizable</span>
     <span class="s1">'IngresoConsecutivo'</span><span class="p">,</span>  <span class="c1"># identificador de ingreso — se usa para la particion</span>
@@ -10700,7 +10699,7 @@ El gráfico de importancia por <em>Gain</em> (ganancia promedio de cada variable
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span><span class="o">,</span><span class="w"> </span><span class="nn">time</span>
 
-<span class="c1"># Instalar mealpy — captura output para diagnostico</span>
+<span class="c1"># Instalar mealpy para optimizacion metaheuristica</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
     <span class="p">[</span><span class="n">sys</span><span class="o">.</span><span class="n">executable</span><span class="p">,</span> <span class="s1">'-m'</span><span class="p">,</span> <span class="s1">'pip'</span><span class="p">,</span> <span class="s1">'install'</span><span class="p">,</span> <span class="s1">'mealpy'</span><span class="p">,</span> <span class="s1">'-q'</span><span class="p">],</span>
     <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
@@ -10988,9 +10987,9 @@ Ganador: WOA-XGBoost
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="Modelo-9-%E2%80%94-WOA-XGBoost-(Whale-Optimization-Algorithm)">Modelo 9 — WOA-XGBoost (Whale Optimization Algorithm)<a class="anchor-link" href="#Modelo-9-%E2%80%94-WOA-XGBoost-(Whale-Optimization-Algorithm)">¶</a></h3><p><strong>Referencias academicas:</strong></p>
 <ul>
-<li><strong>Mirjalili &amp; Lewis (2016)</strong> — <em>The Whale Optimization Algorithm</em>. Advances in Engineering Software, 95, 51-67. DOI: 10.1016/j.advengsoft.2016.01.008. Paper original con &gt;15.000 citas. Inspirado en el comportamiento de caza cooperativo de las ballenas jorobadas.</li>
-<li><strong>Arumugam et al. (2026)</strong> — <em>A Hybrid Whale Optimization and XGBoost Framework for Accurate Prediction of Type 2 Diabetes Mellitus</em>. Bangladesh Journal of Medical Science, 25(1), 78-89. Demuestra que WOA-XGBoost supera a XGBoost con GridSearch en clasificacion binaria medica con dataset de tamano similar al de glosas.</li>
-<li><strong>Shrestha et al. (2025)</strong> — <em>Predicting the Recurrence of Differentiated Thyroid Cancer Using Whale Optimization-Based XGBoost Algorithm</em>. Diagnostics, 15(13), 1684. DOI: 10.3390/diagnostics15131684. Validacion adicional en problema medico binario.</li>
+<li><strong>Mirjalili &amp; Lewis (2016)</strong> — <em>The Whale Optimization Algorithm</em>. Advances in Engineering Software, 95, 51-67. DOI: <a href="https://doi.org/10.1016/j.advengsoft.2016.01.008">10.1016/j.advengsoft.2016.01.008</a>. Paper original con &gt;15.000 citas. Inspirado en el comportamiento de caza cooperativo de las ballenas jorobadas.</li>
+<li><strong>Arumugam et al. (2026)</strong> — <em><a href="https://www.banglajol.info/index.php/BJMS/article/view/86405">A Hybrid Whale Optimization and XGBoost Framework for Accurate Prediction of Type 2 Diabetes Mellitus</a></em>. Bangladesh Journal of Medical Science, 25(1), 78-89. Demuestra que WOA-XGBoost supera a XGBoost con GridSearch en clasificacion binaria medica con dataset de tamano similar al de glosas.</li>
+<li><strong>Shrestha et al. (2025)</strong> — <em>Predicting the Recurrence of Differentiated Thyroid Cancer Using Whale Optimization-Based XGBoost Algorithm</em>. Diagnostics, 15(13), 1684. DOI: <a href="https://doi.org/10.3390/diagnostics15131684">10.3390/diagnostics15131684</a>. Validacion adicional en problema medico binario.</li>
 </ul>
 <hr/>
 <p><strong>Que es WOA?</strong>
@@ -11315,7 +11314,7 @@ Diferencia notable -&gt; revisar posible sobreajuste al split 80/20.
 <li>No requiere supuestos parametricos sobre la distribucion de las predicciones.</li>
 <li>Es el estandar en literatura medica de ML para comparacion de clasificadores binarios.</li>
 </ol>
-<p><strong>Referencia:</strong> DeLong, E. R., DeLong, D. M., &amp; Clarke-Pearson, D. L. (1988). <em>Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach.</em> Biometrics, 44(3), 837-845.</p>
+<p><strong>Referencia:</strong> DeLong, E. R., DeLong, D. M., &amp; Clarke-Pearson, D. L. (1988). <em>Comparing the areas under two or more correlated receiver operating characteristic curves: a nonparametric approach.</em> Biometrics, 44(3), 837-845. <a href="https://doi.org/10.2307/2531595">Enlace</a></p>
 </div>
 </div>
 </div>
