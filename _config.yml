@@ -1,0 +1,35 @@
+# Configuración del Jupyter Book — Predicción de Glosas Clínica Porvenir
+title: "Predicción de Glosas Médicas — Clínica Porvenir"
+author: David Florez Diaz
+copyright: "2026"
+logo: ""
+
+execute:
+  execute_notebooks: "off"
+
+parse:
+  myst_enable_extensions:
+    - colon_fence
+    - dollarmath
+    - linkify
+    - substitution
+
+html:
+  use_repository_button: true
+  use_issues_button: false
+  use_edit_page_button: false
+  comments:
+    hypothesis: false
+
+repository:
+  url: https://github.com/Davdflrz/Proyecto-Glosas-CP
+  branch: main
+
+launch_buttons:
+  notebook_interface: classic
+  colab_url: "https://colab.research.google.com"
+
+sphinx:
+  config:
+    html_show_sourcelink: false
+    suppress_warnings: ["mystnb.unknown_mime_type"]
