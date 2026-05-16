@@ -39,16 +39,18 @@ optimizado por el **Whale Optimization Algorithm (WOA)** aplicado a XGBoost.
 
 ## Resultados principales
 
-| Modelo | AUC-ROC | F1-Macro | Accuracy |
-|---|---|---|---|
-| Árbol de Decisión (baseline) | 0.8406 | 0.7713 | 0.7713 |
-| Random Forest | 0.8170 | 0.6826 | 0.6864 |
-| XGBoost (GridSearch) | **0.8748** | 0.7881 | 0.7883 |
-| **WOA-XGBoost (final)** | 0.8744 | **0.8041** | **0.8046** |
+| Modelo | AUC-ROC | F1-Macro | Accuracy | Recall |
+|---|---|---|---|---|
+| Árbol de Decisión (baseline ML) | 0.8406 | 0.7713 | 0.7713 | 0.7856 |
+| Random Forest | 0.8170 | 0.6826 | 0.6864 | 0.7147 |
+| **XGBoost (GridSearch) — Modelo Final** | **0.8748** | **0.7881** | **0.7883** | **0.7990** |
+| WOA-XGBoost (exploración metodológica) | 0.8641 | 0.7742 | 0.7744 | 0.7859 |
 
-**Modelo seleccionado:** WOA-XGBoost — gana en F1-Macro, Accuracy, Precision y
-Recall sobre el conjunto de prueba. El AUC es prácticamente idéntico al de
-XGBoost-GridSearch (diferencia no significativa según prueba de DeLong, p = 0.607).
+**Modelo seleccionado:** XGBoost optimizado con GridSearchCV — obtuvo el mejor
+desempeño en las cinco métricas evaluadas. La exploración con Whale Optimization
+Algorithm, implementado desde cero con cuatro adaptaciones al problema y 1 350
+evaluaciones de hiperparámetros, no logró superar al baseline. Este resultado
+valida que el GridSearch alcanzó el techo asintótico extraíble del dataset.
 
 ---
 
@@ -56,7 +58,9 @@ XGBoost-GridSearch (diferencia no significativa según prueba de DeLong, p = 0.6
 
 Hasta donde se conoce, este es el primer trabajo documentado que aplica el
 **Whale Optimization Algorithm** (Mirjalili & Lewis, 2016) al problema de
-predicción de glosas en el sistema de salud colombiano.
+predicción de glosas en el sistema de salud colombiano, con una implementación
+propia del algoritmo desde cero y una metodología rigurosa de limpieza de fuga
+de datos por agrupación de ingresos hospitalarios.
 
 ---
 
@@ -64,7 +68,7 @@ predicción de glosas en el sistema de salud colombiano.
 
 - Python 3.9
 - scikit-learn, XGBoost
-- mealpy (Whale Optimization Algorithm)
-- pandas, numpy, matplotlib, seaborn
+- NumPy (implementación propia del Whale Optimization Algorithm)
+- pandas, matplotlib, seaborn
 - Dash (dashboard interactivo)
 - Jupyter Book (publicación web)
