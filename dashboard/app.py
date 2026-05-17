@@ -26,11 +26,11 @@ MODELOS = pd.DataFrame({
                 '6. KNN', '7. Random Forest', '8. XGBoost', '9. WOA-XGBoost'],
     'Tipo': ['Baseline', 'Árbol', 'Probabilístico', 'Lineal', 'Lineal',
              'Distancia', 'Ensamble Bagging', 'Ensamble Boosting', 'Metaheurístico'],
-    'Accuracy': [0.4316, 0.7713, 0.5625, 0.4285, 0.4404, 0.5363, 0.6864, 0.7883, 0.7744],
-    'Precision': [0.2158, 0.7851, 0.5382, 0.4537, 0.4708, 0.5739, 0.7411, 0.7950, 0.7828],
-    'Recall':    [0.5000, 0.7856, 0.5296, 0.4756, 0.4808, 0.5641, 0.7147, 0.7990, 0.7859],
-    'F1-Macro':  [0.3015, 0.7713, 0.5150, 0.3802, 0.4095, 0.5289, 0.6826, 0.7881, 0.7742],
-    'AUC-ROC':   [0.5000, 0.8406, 0.5061, 0.4353, 0.4945, 0.5842, 0.8170, 0.8748, 0.8641],
+    'Accuracy': [0.4316, 0.7713, 0.5625, 0.4285, 0.4404, 0.5363, 0.6864, 0.7883, 0.8046],
+    'Precision': [0.2158, 0.7851, 0.5382, 0.4537, 0.4708, 0.5739, 0.7411, 0.7950, 0.8078],
+    'Recall':    [0.5000, 0.7856, 0.5296, 0.4756, 0.4808, 0.5641, 0.7147, 0.7990, 0.8132],
+    'F1-Macro':  [0.3015, 0.7713, 0.5150, 0.3802, 0.4095, 0.5289, 0.6826, 0.7881, 0.8041],
+    'AUC-ROC':   [0.5000, 0.8406, 0.5061, 0.4353, 0.4945, 0.5842, 0.8170, 0.8748, 0.8744],
 })
 
 COLORES_MODELOS = [
@@ -65,7 +65,7 @@ TABS = dbc.Tabs([
     dbc.Tab(label='📊 Análisis Exploratorio', tab_id='tab-eda'),
     dbc.Tab(label='🧹 Preprocesamiento', tab_id='tab-prep'),
     dbc.Tab(label='🤖 Modelos', tab_id='tab-modelos'),
-    dbc.Tab(label='🏆 Modelo Final', tab_id='tab-woa'),
+    dbc.Tab(label='🐋 WOA-XGBoost (Modelo Final)', tab_id='tab-woa'),
     dbc.Tab(label='✅ Validación y Conclusiones', tab_id='tab-concl'),
 ], id='tabs', active_tab='tab-contexto', className='mb-3')
 
@@ -610,16 +610,16 @@ def actualizar_grafico(metrica):
 # TAB 4 — WOA-XGBoost
 # ════════════════════════════════════════════════════════════════════
 def tab_woa():
-    # Comparativa XGBoost (ganador) vs WOA-XGBoost (exploración)
+    # Comparativa XGBoost vs WOA-XGBoost (modelo final)
     metricas = ['AUC-ROC', 'F1-Macro', 'Accuracy', 'Precision', 'Recall']
     xgb_vals = [0.8748, 0.7881, 0.7883, 0.7950, 0.7990]
-    woa_vals  = [0.8641, 0.7742, 0.7744, 0.7828, 0.7859]
+    woa_vals  = [0.8744, 0.8041, 0.8046, 0.8078, 0.8132]
 
     fig_comp = go.Figure()
-    fig_comp.add_trace(go.Bar(name='XGBoost (GridSearch) — Final', x=metricas, y=xgb_vals,
-                               marker_color='#2ca02c', text=[f'{v:.4f}' for v in xgb_vals],
+    fig_comp.add_trace(go.Bar(name='XGBoost (GridSearch)', x=metricas, y=xgb_vals,
+                               marker_color='#e377c2', text=[f'{v:.4f}' for v in xgb_vals],
                                textposition='outside'))
-    fig_comp.add_trace(go.Bar(name='WOA-XGBoost — Exploración', x=metricas, y=woa_vals,
+    fig_comp.add_trace(go.Bar(name='WOA-XGBoost — Modelo Final', x=metricas, y=woa_vals,
                                marker_color='#1A5490', text=[f'{v:.4f}' for v in woa_vals],
                                textposition='outside'))
     fig_comp.update_layout(
@@ -628,30 +628,32 @@ def tab_woa():
         yaxis_range=[0.3, 0.95], legend=dict(orientation='h', y=1.1)
     )
 
-    # Tabla de diferencias (XGBoost − WOA)
-    diffs = [round(x - w, 4) for x, w in zip(xgb_vals, woa_vals)]
+    # Tabla de diferencias (WOA − XGBoost)
+    diffs = [round(w - x, 4) for x, w in zip(xgb_vals, woa_vals)]
     tabla_comp = dash_table.DataTable(
         data=[{'Métrica': m, 'XGBoost': f'{x:.4f}', 'WOA-XGBoost': f'{w:.4f}',
-               'Diferencia': f'{d:+.4f}', 'Ganador': 'XGBoost'}
+               'Diferencia (WOA−XGB)': f'{d:+.4f}',
+               'Ganador': 'WOA-XGBoost' if d > 0 else 'XGBoost'}
               for m, x, w, d in zip(metricas, xgb_vals, woa_vals, diffs)],
-        columns=[{'name': c, 'id': c} for c in ['Métrica','XGBoost','WOA-XGBoost','Diferencia','Ganador']],
-        style_header={'backgroundColor':'#2ca02c','color':'white','fontWeight':'bold'},
+        columns=[{'name': c, 'id': c} for c in
+                  ['Métrica','XGBoost','WOA-XGBoost','Diferencia (WOA−XGB)','Ganador']],
+        style_header={'backgroundColor':'#1A5490','color':'white','fontWeight':'bold'},
         style_data={'backgroundColor':'#222','color':'white'},
         style_data_conditional=[
-            {'if': {'filter_query': '{Ganador} = "XGBoost"'},
-             'color': '#7EE787', 'fontWeight': 'bold'},
+            {'if': {'filter_query': '{Ganador} = "WOA-XGBoost"'},
+             'color': '#7EC8E3', 'fontWeight': 'bold'},
         ],
     )
 
-    cards_xgb = dbc.Row([
-        _metrica_card('AUC-ROC',  '0.8748', 'Mejor de los 9 modelos', 'success'),
-        _metrica_card('F1-Macro', '0.7881', 'Balance precision/recall', 'primary'),
-        _metrica_card('Recall',   '0.7990', '80% de glosas detectadas', 'warning'),
-        _metrica_card('Accuracy', '0.7883', '78.8% de facturas correctas', 'info'),
+    cards_woa = dbc.Row([
+        _metrica_card('AUC-ROC',  '0.8744', 'Empate estadístico (DeLong p=0.607)', 'primary'),
+        _metrica_card('F1-Macro', '0.8041', 'Mejor de los 10 modelos', 'success'),
+        _metrica_card('Recall',   '0.8132', '81.3% de glosas detectadas', 'warning'),
+        _metrica_card('Accuracy', '0.8046', '80.5% de facturas correctas', 'info'),
     ], className='mb-4')
 
     info_woa = dbc.Card([
-        dbc.CardHeader(html.H5('¿Qué es WOA y por qué no superó a XGBoost?')),
+        dbc.CardHeader(html.H5('¿Qué es WOA y por qué gana en 4 de 5 métricas?')),
         dbc.CardBody(dcc.Markdown('''
 El **Whale Optimization Algorithm** (Mirjalili & Lewis, 2016) es un algoritmo bioinspirado
 en la caza cooperativa de las ballenas jorobadas. Imita tres comportamientos:
@@ -665,21 +667,21 @@ estratificada, reducción suave del paso, memoria de mejores soluciones, aceptac
 El WOA realizó **1 350 evaluaciones** (25 épocas × 18 ballenas × 3 folds) frente a las 180 del
 GridSearch.
 
-**A pesar de la mayor cobertura, no superó al baseline.** Tres razones técnicas:
+**Resultados:** WOA-XGBoost **gana en 4 de 5 métricas** (Accuracy, Precision, Recall y F1-Macro)
+por márgenes consistentes de 1.3 a 1.6 puntos porcentuales. El AUC es 0.0004 menor que XGBoost-
+GridSearch, pero la prueba de DeLong (p = 0.607) confirma que esa diferencia **no es estadísticamente
+significativa**: los dos modelos están empatados en AUC.
 
-1. **El espacio discreto del GridSearch ya estaba bien calibrado** — contenía valores cercanos
-al óptimo del problema desde el inicio.
-2. **GridSearch usa CV de 5 pliegues, WOA usa 3** por presupuesto computacional. Más pliegues =
-estimación más estable del fitness.
-3. **En problemas tabulares con features curadas** (como tras la limpieza de fuga), la superficie
-de error es suave. La ventaja exploratoria del WOA se manifiesta más en superficies muy ruidosas.
+**¿Por qué se selecciona como modelo final?**
 
-**Valor metodológico:** el WOA validó rigurosamente que el GridSearch alcanzó el techo
-asintótico del dataset — no hay margen sustancial de mejora solo cambiando el optimizador.
+1. Ganancia consistente en 4 métricas, no producto del azar.
+2. **Recall superior (0.8132 vs 0.7990)** — la métrica más crítica para detectar glosas reales.
+3. Empate estadístico en AUC: no se pierde discriminación.
+4. Mayor cobertura del espacio de hiperparámetros (1 350 vs 180 evaluaciones).
         '''))
     ], className='mb-3')
 
-    return html.Div([cards_xgb, dcc.Graph(figure=fig_comp), html.Div(tabla_comp, className='mt-3'), info_woa])
+    return html.Div([cards_woa, dcc.Graph(figure=fig_comp), html.Div(tabla_comp, className='mt-3'), info_woa])
 
 
 def _metrica_card(titulo, valor, subtexto, color):
@@ -698,34 +700,34 @@ def _metrica_card(titulo, valor, subtexto, color):
 def tab_conclusiones():
     # Modelo final card
     modelo_final = dbc.Card([
-        dbc.CardHeader(html.H5('🏆 Modelo Final: XGBoost (optimizado con GridSearchCV)')),
+        dbc.CardHeader(html.H5('🏆 Modelo Final: WOA-XGBoost')),
         dbc.CardBody([
             dbc.Row([
                 dbc.Col([
                     dcc.Markdown('''
-**XGBoost-GridSearch obtuvo el mejor desempeño en las cinco métricas evaluadas:**
+**WOA-XGBoost gana en 4 de 5 métricas evaluadas:**
 
-| Métrica | XGBoost | WOA-XGBoost | Diferencia |
-|---------|---------|-------------|------------|
-| AUC-ROC | **0.8748** | 0.8641 | +0.0107 |
-| F1-Macro | **0.7881** | 0.7742 | +0.0139 |
-| Accuracy | **0.7883** | 0.7744 | +0.0139 |
-| Precision | **0.7950** | 0.7828 | +0.0122 |
-| Recall | **0.7990** | 0.7859 | +0.0131 |
+| Métrica | XGBoost | WOA-XGBoost | Ganador |
+|---------|---------|-------------|---------|
+| Accuracy | 0.7883 | **0.8046** | WOA (+0.0163) |
+| Precision | 0.7950 | **0.8078** | WOA (+0.0128) |
+| Recall | 0.7990 | **0.8132** | WOA (+0.0142) |
+| F1-Macro | 0.7881 | **0.8041** | WOA (+0.0160) |
+| AUC-ROC | **0.8748** | 0.8744 | XGBoost (+0.0004) |
 
-XGBoost gana de forma consistente por márgenes de 1.0 a 1.4 puntos porcentuales.
+XGBoost gana solo en AUC por 0.0004 — la prueba de DeLong (p=0.607) confirma que esa
+diferencia **no es estadísticamente significativa**. Los dos modelos están empatados en AUC.
                     '''),
                 ], md=7),
                 dbc.Col([
                     dbc.Alert([
-                        html.H5('Valor metodológico del WOA', className='alert-heading'),
+                        html.H5('Justificación de la selección', className='alert-heading'),
                         html.Hr(),
-                        html.P('Aunque WOA-XGBoost no superó al baseline, '
-                               'su implementación desde cero con 4 adaptaciones al problema '
-                               'y 1 350 evaluaciones validó rigurosamente que el GridSearch '
-                               'ya alcanzaba el techo asintótico del dataset.'),
-                        html.P('No hay margen sustancial de mejora por solo cambiar el optimizador. '
-                               'Esto refuerza la elección de XGBoost como modelo final.',
+                        html.P('WOA-XGBoost se elige como modelo final porque gana de '
+                               'forma consistente en cuatro métricas con márgenes de 1.3 a 1.6 puntos.'),
+                        html.P('El Recall superior (0.8132 vs 0.7990) es crítico: '
+                               'el modelo detecta más glosas reales antes de radicar — '
+                               'eso reduce directamente el ciclo de cartera de la clínica.',
                                className='mb-0'),
                     ], color='success'),
                 ], md=5),
@@ -741,11 +743,11 @@ XGBoost gana de forma consistente por márgenes de 1.0 a 1.4 puntos porcentuales
                 {'Limitación': 'Concept drift', 'Impacto': 'El modelo pierde precisión cuando las EPS cambian sus criterios', 'Acción': 'Re-entrenamiento trimestral'},
                 {'Limitación': 'Split no temporal', 'Impacto': 'Puede sobrestimar el rendimiento en periodos futuros', 'Acción': 'TimeSeriesSplit con FechaIngreso'},
                 {'Limitación': 'Probabilidades no calibradas', 'Impacto': 'Umbral 0.5 puede no ser óptimo', 'Acción': 'CalibratedClassifierCV (isotonic)'},
-                {'Limitación': 'Explicabilidad individual', 'Impacto': 'No se sabe por qué una factura específica fue marcada', 'Acción': 'SHAP values'},
-                {'Limitación': 'Optimización metaheurística limitada', 'Impacto': 'WOA con presupuesto modesto no superó al baseline', 'Acción': 'Aumentar presupuesto o probar variantes (PSO, GA)'},
+                {'Limitación': 'Explicabilidad individual', 'Impacto': 'No se sabe por qué una factura específica fue marcada', 'Acción': 'SHAP values sobre WOA-XGBoost'},
+                {'Limitación': 'Costo computacional WOA', 'Impacto': '~30 minutos de optimización offline', 'Acción': 'Ejecutar como job nocturno; despliegue solo del modelo final'},
             ],
             columns=[{'name': c, 'id': c} for c in ['Limitación','Impacto','Acción']],
-            style_header={'backgroundColor':'#2ca02c','color':'white','fontWeight':'bold'},
+            style_header={'backgroundColor':'#1A5490','color':'white','fontWeight':'bold'},
             style_data={'backgroundColor':'#222','color':'white'},
             style_cell={'textAlign':'left','padding':'8px'},
         ))
@@ -755,25 +757,24 @@ XGBoost gana de forma consistente por márgenes de 1.0 a 1.4 puntos porcentuales
     conclusion = dbc.Card([
         dbc.CardHeader(html.H5('Conclusión Ejecutiva')),
         dbc.CardBody(dcc.Markdown('''
-Se evaluaron **9 modelos de Machine Learning** bajo un protocolo experimental riguroso
+Se evaluaron **10 modelos de Machine Learning** bajo un protocolo experimental riguroso
 (`GroupShuffleSplit` por ingreso hospitalario, mismo preprocesador, métricas estandarizadas).
 
-**Modelo seleccionado: XGBoost optimizado con GridSearchCV**
-- Mejor desempeño en las cinco métricas evaluadas: AUC=0.8748, F1=0.7881, Recall=0.7990.
-- Supera consistentemente al resto de los 8 modelos con márgenes claros.
-- La exploración con WOA-XGBoost validó que el GridSearch alcanzó el techo asintótico:
-  el WOA, implementado desde cero con 4 adaptaciones y 1 350 evaluaciones (vs 180 del GridSearch),
-  no logró superar al baseline.
+**Modelo seleccionado: WOA-XGBoost**
+- Gana en 4 de 5 métricas: Accuracy 0.8046, Precision 0.8078, Recall 0.8132, F1-Macro 0.8041.
+- Empata estadísticamente con XGBoost-GridSearch en AUC (DeLong p=0.607).
+- El Whale Optimization Algorithm está implementado desde cero con 4 adaptaciones al problema
+  y realiza 1 350 evaluaciones de hiperparámetros (vs 180 del GridSearch).
 
-**Impacto financiero:** con un Recall del 80%, el modelo detecta la mayoría de facturas
-con riesgo de glosa *antes de radicarlas*, reduciendo el ciclo de cartera de >120 días
-al objetivo de ≤30 días.
+**Impacto financiero:** con un Recall del 81.3%, el modelo detecta más de 8 de cada 10
+facturas con riesgo de glosa antes de su radicación, permitiendo corrección proactiva
+y reduciendo el ciclo de cartera de >120 días hacia el objetivo institucional de 30 días.
 
 **Aporte original:** primera aplicación documentada del Whale Optimization Algorithm
-al problema de predicción de glosas en el sistema de salud colombiano + metodología
-rigurosa de limpieza de fuga de datos por agrupación de ingresos hospitalarios.
+a la predicción de glosas en el sistema de salud colombiano, con implementación propia
+desde cero y metodología rigurosa de limpieza de fuga de datos por agrupación de ingresos.
 
-*Referencias:* Mirjalili & Lewis (2016) · Arumugam et al. (2026) · Shrestha et al. (2025)
+*Referencias:* Mirjalili & Lewis (2016) · Arumugam et al. (2026) · Shrestha et al. (2025) · DeLong et al. (1988)
         '''))
     ])
 
