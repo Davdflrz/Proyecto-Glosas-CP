@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install jupyter-book==0.15.1 myst-nb
+          pip install jupyter-book==0.15.1 myst-nb sphinxcontrib-bibtex
 
       - name: Build the Jupyter Book
         run: jb build .

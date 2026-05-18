@@ -1,5 +1,11 @@
+"""
+Dashboard Interactivo — Predicción Temprana de Glosas Médicas
+Universidad del Norte · Maestría en Analítica de Datos · 2026
+
+Diseño: sidebar lateral + KPI cards + tema corporativo (dash-bootstrap-templates).
+"""
 import dash
-from dash import dcc, html, Input, Output, dash_table
+from dash import dcc, html, Input, Output, dash_table, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
@@ -8,780 +14,595 @@ import numpy as np
 import os, warnings
 warnings.filterwarnings('ignore')
 
-# ── Rutas ────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# Configuración de tema (dash-bootstrap-templates compatible)
+# ─────────────────────────────────────────────────────────────────────
+try:
+    from dash_bootstrap_templates import load_figure_template
+    load_figure_template("cyborg")
+    PLOTLY_TEMPLATE = "cyborg"
+except ImportError:
+    PLOTLY_TEMPLATE = "plotly_dark"
+
+DBC_THEME = dbc.themes.CYBORG  # tema profesional oscuro tipo corporativo
+
+# ─────────────────────────────────────────────────────────────────────
+# Rutas y carga de datos
+# ─────────────────────────────────────────────────────────────────────
 ROOT = os.path.join(os.path.dirname(__file__), '..')
 DATA_PATH = os.path.join(ROOT, 'data', 'raw', 'DataSet_Final_Unificado.xlsx')
 
-# ── Dataset para EDA (lectura única al arrancar) ──────────────────────
 df_raw = pd.read_excel(DATA_PATH)
 df_raw['ValorObjetado'] = df_raw['ValorObjetado'].fillna(0)
 df_raw['Estado_Glosa']  = (df_raw['ValorObjetado'] > 0).astype(int)
 df_raw['Estado_Texto']  = df_raw['Estado_Glosa'].map({0: 'Limpia', 1: 'Glosada'})
 df_raw['PacienteEdad']  = df_raw['PacienteEdad'].astype(str).str.extract(r'(\d+)').astype(float)
 
-# ── Resultados reales del notebook ────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# Resultados reales del notebook (2025 — última corrida)
+# ─────────────────────────────────────────────────────────────────────
 MODELOS = pd.DataFrame({
-    'Modelo': ['1. Dummy', '2. Árbol Dec.', '3. GaussianNB',
-                '4. Logística L2', '5. Logística L1',
-                '6. KNN', '7. Random Forest', '8. XGBoost', '9. WOA-XGBoost'],
-    'Tipo': ['Baseline', 'Árbol', 'Probabilístico', 'Lineal', 'Lineal',
-             'Distancia', 'Ensamble Bagging', 'Ensamble Boosting', 'Metaheurístico'],
-    'Accuracy': [0.4316, 0.7713, 0.5625, 0.4285, 0.4404, 0.5363, 0.6864, 0.7883, 0.8046],
-    'Precision': [0.2158, 0.7851, 0.5382, 0.4537, 0.4708, 0.5739, 0.7411, 0.7950, 0.8078],
-    'Recall':    [0.5000, 0.7856, 0.5296, 0.4756, 0.4808, 0.5641, 0.7147, 0.7990, 0.8132],
-    'F1-Macro':  [0.3015, 0.7713, 0.5150, 0.3802, 0.4095, 0.5289, 0.6826, 0.7881, 0.8041],
-    'AUC-ROC':   [0.5000, 0.8406, 0.5061, 0.4353, 0.4945, 0.5842, 0.8170, 0.8748, 0.8744],
+    'Modelo': [
+        '1. Dummy', '2. Árbol Dec.', '3. GaussianNB', '4. Logística L2',
+        '5. Logística L1', '6. KNN', '7. MLP', '8. Random Forest',
+        '9. XGBoost', '10. WOA-XGBoost'
+    ],
+    'Tipo': [
+        'Baseline', 'Árbol', 'Probabilístico', 'Lineal', 'Lineal',
+        'Distancia', 'Red Neuronal', 'Ensamble Bagging',
+        'Ensamble Boosting', 'Metaheurístico'
+    ],
+    'Accuracy':  [0.4316, 0.7713, 0.5625, 0.4285, 0.4404, 0.5363, 0.7262, 0.6864, 0.7883, 0.8048],
+    'Precision': [0.2158, 0.7851, 0.5382, 0.4537, 0.4708, 0.5739, 0.7429, 0.7411, 0.7950, 0.8094],
+    'Recall':    [0.5000, 0.7856, 0.5296, 0.4756, 0.4808, 0.5641, 0.7414, 0.7147, 0.7990, 0.8143],
+    'F1-Macro':  [0.3015, 0.7713, 0.5150, 0.3802, 0.4095, 0.5289, 0.7261, 0.6826, 0.7881, 0.8044],
+    'AUC-ROC':   [0.5000, 0.8406, 0.5061, 0.4353, 0.4945, 0.5842, 0.7951, 0.8170, 0.8748, 0.8715],
 })
 
 COLORES_MODELOS = [
-    '#d62728','#ff7f0e','#9467bd','#1f77b4','#17becf',
-    '#2ca02c','#aec7e8','#e377c2','#1A5490'
+    '#dc3545', '#fd7e14', '#9467bd', '#0d6efd', '#17a2b8',
+    '#28a745', '#c2185b', '#aec7e8', '#e377c2', '#1A5490'
 ]
 
-# ── App ───────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────
+# Inicialización de la app
+# ─────────────────────────────────────────────────────────────────────
 app = dash.Dash(
     __name__,
-    external_stylesheets=[dbc.themes.DARKLY],
-    title='Predicción de Glosas — Clínica Porvenir'
+    external_stylesheets=[DBC_THEME, dbc.icons.BOOTSTRAP],
+    title='Predicción de Glosas · Clínica Porvenir',
+    suppress_callback_exceptions=True,
+    meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1.0'}]
 )
 server = app.server
 
-# ════════════════════════════════════════════════════════════════════
-# LAYOUT
-# ════════════════════════════════════════════════════════════════════
-HEADER = dbc.Navbar(
-    dbc.Container([
-        html.Div([
-            html.H4('🏥 Predicción de Glosas Médicas', className='text-white mb-0'),
-            html.Small('Clínica Porvenir · Tesis de Maestría en Analítica de Datos · 2026',
-                       className='text-muted'),
-        ]),
-    ], fluid=True),
-    color='primary', dark=True, className='mb-3 shadow'
-)
+# ═════════════════════════════════════════════════════════════════════
+# SIDEBAR — Navegación lateral fija
+# ═════════════════════════════════════════════════════════════════════
+SIDEBAR_STYLE = {
+    'position': 'fixed', 'top': 0, 'left': 0, 'bottom': 0,
+    'width': '16rem', 'padding': '2rem 1rem',
+    'backgroundColor': '#1a1a1a',
+    'borderRight': '1px solid #333',
+    'overflowY': 'auto',
+}
 
-TABS = dbc.Tabs([
-    dbc.Tab(label='📋 Contexto', tab_id='tab-contexto'),
-    dbc.Tab(label='📊 Análisis Exploratorio', tab_id='tab-eda'),
-    dbc.Tab(label='🧹 Preprocesamiento', tab_id='tab-prep'),
-    dbc.Tab(label='🤖 Modelos', tab_id='tab-modelos'),
-    dbc.Tab(label='🐋 WOA-XGBoost (Modelo Final)', tab_id='tab-woa'),
-    dbc.Tab(label='✅ Validación y Conclusiones', tab_id='tab-concl'),
-], id='tabs', active_tab='tab-contexto', className='mb-3')
+CONTENT_STYLE = {
+    'marginLeft': '17rem', 'marginRight': '1rem',
+    'padding': '2rem 1rem',
+}
 
-app.layout = dbc.Container([
-    HEADER,
-    TABS,
-    html.Div(id='tab-content'),
-], fluid=True)
+sidebar = html.Div([
+    html.Div([
+        html.I(className='bi bi-hospital', style={'fontSize': '2.5rem', 'color': '#0dcaf0'}),
+    ], className='text-center mb-3'),
+    html.H5('Predicción de Glosas', className='text-white text-center fw-bold mb-1'),
+    html.P('Clínica Porvenir', className='text-muted text-center small mb-4'),
+    html.Hr(className='border-secondary'),
+    dbc.Nav([
+        dbc.NavLink([html.I(className='bi bi-house-door me-2'), 'Inicio'],         href='/',             active='exact'),
+        dbc.NavLink([html.I(className='bi bi-bar-chart-line me-2'), 'EDA'],         href='/eda',          active='exact'),
+        dbc.NavLink([html.I(className='bi bi-funnel me-2'), 'Preprocesamiento'],   href='/preprocesamiento', active='exact'),
+        dbc.NavLink([html.I(className='bi bi-cpu me-2'), 'Modelos'],               href='/modelos',      active='exact'),
+        dbc.NavLink([html.I(className='bi bi-trophy me-2'), 'Modelo Final'],       href='/final',        active='exact'),
+        dbc.NavLink([html.I(className='bi bi-check-circle me-2'), 'Conclusiones'], href='/conclusiones', active='exact'),
+    ], vertical=True, pills=True, className='mb-4'),
+    html.Hr(className='border-secondary'),
+    html.Div([
+        html.P('David Florez Diaz', className='text-white small fw-bold mb-0'),
+        html.P('Tesis · Maestría 2026', className='text-muted small mb-1'),
+        html.P('Universidad del Norte', className='text-muted small mb-0'),
+    ], className='mt-auto'),
+], style=SIDEBAR_STYLE)
+
+content = html.Div(id='page-content', style=CONTENT_STYLE)
+
+app.layout = html.Div([dcc.Location(id='url'), sidebar, content])
 
 
-# ════════════════════════════════════════════════════════════════════
-# CALLBACKS
-# ════════════════════════════════════════════════════════════════════
-@app.callback(Output('tab-content', 'children'), Input('tabs', 'active_tab'))
-def render_tab(tab):
-    if tab == 'tab-contexto':   return tab_contexto()
-    if tab == 'tab-eda':        return tab_eda()
-    if tab == 'tab-prep':       return tab_preprocesamiento()
-    if tab == 'tab-modelos':    return tab_modelos()
-    if tab == 'tab-woa':        return tab_woa()
-    if tab == 'tab-concl':      return tab_conclusiones()
-    return html.Div()
-
-
-# ════════════════════════════════════════════════════════════════════
-# TAB 1 — CONTEXTO
-# ════════════════════════════════════════════════════════════════════
-def tab_contexto():
-    stats_cards = dbc.Row([
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                html.H2('88,480', className='text-warning fw-bold text-center'),
-                html.P('Registros de facturación', className='text-center text-muted mb-0'),
-            ])
-        ], color='dark', outline=True), md=3),
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                html.H2('44 %', className='text-danger fw-bold text-center'),
-                html.P('Facturas glosadas', className='text-center text-muted mb-0'),
-            ])
-        ], color='dark', outline=True), md=3),
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                html.H2('> 120 días', className='text-info fw-bold text-center'),
-                html.P('Ciclo de cartera actual', className='text-center text-muted mb-0'),
-            ])
-        ], color='dark', outline=True), md=3),
-        dbc.Col(dbc.Card([
-            dbc.CardBody([
-                html.H2('9 modelos', className='text-success fw-bold text-center'),
-                html.P('Evaluados y comparados', className='text-center text-muted mb-0'),
-            ])
-        ], color='dark', outline=True), md=3),
-    ], className='mb-4')
-
-    problema = dbc.Card([
-        dbc.CardHeader(html.H5('¿Cuál es el problema?', className='mb-0')),
-        dbc.CardBody(dcc.Markdown('''
-La **Clínica Porvenir** enfrenta pérdidas significativas por **glosas**: rechazos de facturas
-médicas por parte de las EPS que prolongan el ciclo de recaudo de 30 días hasta más de 120.
-
-**Objetivo de este trabajo:** construir un modelo de Machine Learning que prediga si una
-factura será glosada **antes de radicarla**, permitiendo corrección proactiva.
-
-**Variable objetivo:** `Estado_Glosa` — 1 si la factura fue glosada, 0 si fue limpia.
-
-**Metodología clave:** se usa `GroupShuffleSplit` por ingreso hospitalario para garantizar
-que el modelo sea evaluado sobre ingresos *completamente nuevos*, reflejando el escenario
-real de despliegue.
-        '''))
-    ], className='mb-3')
-
-    flujo = dbc.Card([
-        dbc.CardHeader(html.H5('Flujo metodológico', className='mb-0')),
+# ═════════════════════════════════════════════════════════════════════
+# UTILIDADES — Componentes reutilizables
+# ═════════════════════════════════════════════════════════════════════
+def kpi_card(titulo, valor, sub, color='primary', icono='bi-graph-up'):
+    """Tarjeta KPI estilo Manufacturing SPC."""
+    return dbc.Card([
         dbc.CardBody([
-            dbc.Row([
-                _paso('1', 'Carga y unificación de datos', 'Módulo facturación + módulo glosas del sistema Dinámica', 'primary'),
-                _paso('2', 'Preprocesamiento sin fuga', 'Eliminación de variables post-auditoría y GroupShuffleSplit por ingreso', 'warning'),
-                _paso('3', 'Evaluación de 9 modelos', 'Del más simple (Dummy) al más potente (WOA-XGBoost)', 'success'),
-                _paso('4', 'Validación estadística', 'Prueba de DeLong para confirmar significancia de la mejora', 'info'),
-            ]),
+            html.Div([
+                html.I(className=f'bi {icono}', style={'fontSize': '1.5rem', 'opacity': 0.7}),
+                html.Small(titulo.upper(), className='text-muted ms-2'),
+            ], className='d-flex align-items-center mb-2'),
+            html.H2(valor, className=f'text-{color} fw-bold mb-1'),
+            html.Small(sub, className='text-muted'),
         ])
-    ])
-
-    return html.Div([stats_cards, problema, flujo])
+    ], style={'borderTop': f'3px solid var(--bs-{color})'}, className='h-100 shadow-sm')
 
 
-def _paso(num, titulo, desc, color):
-    return dbc.Col(dbc.Card([
-        dbc.CardBody([
-            dbc.Badge(num, color=color, className='mb-2 fs-5 px-3 py-2'),
-            html.H6(titulo, className='fw-bold'),
-            html.Small(desc, className='text-muted'),
-        ])
-    ], color='dark', outline=True), md=3)
-
-
-# ════════════════════════════════════════════════════════════════════
-# TAB 2 — EDA (con sub-pestañas para presentación)
-# ════════════════════════════════════════════════════════════════════
-def tab_eda():
-    hallazgo = dbc.Alert([
-        html.Strong('Hallazgo clave: '),
-        'Las correlaciones de Spearman entre variables numéricas y ',
-        html.Code('Estado_Glosa'), ' son todas menores a 0.09 (máximo: ValEnt = 0.085). ',
-        'El patrón de glosa es ', html.Strong('no lineal y multidimensional'),
-        ': no depende de una variable sola, sino de combinaciones EPS × Servicio × Área. ',
-        'Esto justifica el uso de modelos de ensamble basados en árboles.'
-    ], color='info', className='mb-3')
-
+def section_header(titulo, subtitulo=''):
     return html.Div([
-        hallazgo,
-        dbc.Tabs([
-            dbc.Tab(_eda_univariado(), label='1. Variable Objetivo y Distribuciones'),
-            dbc.Tab(_eda_bivariado(),  label='2. Análisis Bivariado'),
-            dbc.Tab(_eda_eps_area(),   label='3. Riesgo por EPS y Área'),
-            dbc.Tab(_eda_servicios(),  label='4. Riesgo por Servicio'),
-            dbc.Tab(_eda_demograficos(),label='5. Demográficos'),
-            dbc.Tab(_eda_correlaciones(), label='6. Correlaciones'),
-        ])
+        html.H3(titulo, className='fw-bold mb-1'),
+        html.P(subtitulo, className='text-muted mb-4'),
+        html.Hr(className='mb-4'),
     ])
 
 
-# ── 1. Univariado: target + edad + valor ──────────────────────────────
-def _eda_univariado():
-    # Pie del target
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 1 — Inicio
+# ═════════════════════════════════════════════════════════════════════
+def page_inicio():
+    return html.Div([
+        section_header(
+            'Predicción Temprana de Glosas en Facturación Médica',
+            'Trabajo de Grado · Maestría en Analítica de Datos · Universidad del Norte · 2026'
+        ),
+        dbc.Row([
+            dbc.Col(kpi_card('Registros del dataset', '88,480',     'Ítems de facturación', 'info',    'bi-collection'),     md=3),
+            dbc.Col(kpi_card('Tasa de glosa',         '44%',        'Balance natural sin SMOTE',     'danger',  'bi-percent'),         md=3),
+            dbc.Col(kpi_card('Modelos evaluados',     '10',         'De Dummy a WOA-XGBoost',         'warning', 'bi-cpu'),             md=3),
+            dbc.Col(kpi_card('Recall del modelo final','81.4%',     'WOA-XGBoost · F1=0.8044',        'success', 'bi-trophy'),          md=3),
+        ], className='g-3 mb-4'),
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-info-circle me-2'), html.Strong('Problema de Negocio')]),
+                dbc.CardBody([
+                    html.P(['La Clínica Porvenir enfrenta pérdidas por ', html.Strong('glosas'),
+                            ' (rechazos de facturas por parte de las EPS). El ciclo de recaudo pasa de 30 días ideal a más de 120 días reales.']),
+                    html.P('Objetivo: predecir si una factura será glosada ANTES de ser radicada, para corregirla a tiempo.'),
+                    html.P('Variable objetivo: ', className='mb-0'),
+                    html.Code('Estado_Glosa', className='text-info'),
+                    html.Span(' (1 = Glosada, 0 = Limpia)', className='text-muted ms-2'),
+                ])
+            ], className='h-100'), md=6),
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-list-check me-2'), html.Strong('Flujo Metodológico')]),
+                dbc.CardBody([
+                    html.Ol([
+                        html.Li('Carga y unificación de datos (módulo facturación + módulo glosas)'),
+                        html.Li('Detección y eliminación de fuga por agrupación de ingresos'),
+                        html.Li('GroupShuffleSplit por IngresoConsecutivo (80/20)'),
+                        html.Li('Pipeline con ColumnTransformer + 10 modelos'),
+                        html.Li('Validación estadística con prueba de DeLong'),
+                        html.Li('Selección del modelo final: WOA-XGBoost'),
+                    ], className='mb-0'),
+                ])
+            ], className='h-100'), md=6),
+        ], className='g-3'),
+    ])
+
+
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 2 — EDA
+# ═════════════════════════════════════════════════════════════════════
+def page_eda():
+    promedio = df_raw['Estado_Glosa'].mean() * 100
+
+    # Pie target
     conteo = df_raw['Estado_Texto'].value_counts().reset_index()
     conteo.columns = ['Estado', 'Cantidad']
     fig_pie = px.pie(conteo, names='Estado', values='Cantidad',
-                     color='Estado', color_discrete_map={'Limpia':'#2ca02c', 'Glosada':'#d62728'},
-                     title='Distribución del Estado de las Facturas (Variable Objetivo)',
-                     template='plotly_dark')
-    fig_pie.update_traces(textinfo='percent+label+value')
+                     color='Estado',
+                     color_discrete_map={'Limpia': '#28a745', 'Glosada': '#dc3545'},
+                     template=PLOTLY_TEMPLATE)
+    fig_pie.update_traces(textinfo='percent+label', hole=0.4)
+    fig_pie.update_layout(margin=dict(l=20, r=20, t=40, b=20),
+                          title='Distribución de la Variable Objetivo')
 
-    # Histograma edad
+    # Edad
     media_edad = df_raw['PacienteEdad'].mean()
-    mediana_edad = df_raw['PacienteEdad'].median()
     fig_edad = px.histogram(df_raw, x='PacienteEdad', nbins=30,
-                            title='Distribución de Edad del Paciente',
-                            template='plotly_dark', color_discrete_sequence=['#1A5490'])
+                            color_discrete_sequence=['#1A5490'],
+                            template=PLOTLY_TEMPLATE)
     fig_edad.add_vline(x=media_edad, line_dash='dash', line_color='red',
-                       annotation_text=f'Media: {media_edad:.1f}')
-    fig_edad.add_vline(x=mediana_edad, line_dash='dot', line_color='orange',
-                       annotation_text=f'Mediana: {mediana_edad:.0f}')
+                       annotation_text=f'Media: {media_edad:.1f} años')
+    fig_edad.update_layout(title='Distribución de Edad del Paciente',
+                           margin=dict(l=20, r=20, t=40, b=20))
 
-    # Histograma valor
-    fig_val = px.histogram(df_raw[df_raw['TotSer']>0], x='TotSer', nbins=60, log_y=True,
-                           title='Distribución del Valor Total del Servicio (escala log)',
-                           template='plotly_dark', color_discrete_sequence=['#2ca02c'])
-
-    # Tarjetas resumen
-    stats = dbc.Row([
-        dbc.Col(_metrica_card('Total facturas', f"{len(df_raw):,}", 'Registros del dataset', 'info'), md=3),
-        dbc.Col(_metrica_card('% Glosadas', f"{df_raw['Estado_Glosa'].mean()*100:.1f}%", 'Balance natural', 'danger'), md=3),
-        dbc.Col(_metrica_card('Edad media', f"{media_edad:.1f}", 'años', 'primary'), md=3),
-        dbc.Col(_metrica_card('Valor mediano', f"${df_raw['TotSer'].median():,.0f}", 'COP por ítem', 'warning'), md=3),
-    ], className='mb-3 mt-3')
-
-    return html.Div([
-        stats,
-        dbc.Row([
-            dbc.Col(dcc.Graph(figure=fig_pie), md=4),
-            dbc.Col(dcc.Graph(figure=fig_edad), md=8),
-        ], className='mb-3'),
-        dcc.Graph(figure=fig_val),
-        dbc.Alert([
-            html.Strong('Interpretación: '),
-            'el 44% de las facturas terminan glosadas — balance natural sin necesidad de SMOTE. '
-            'La distribución de edad tiene dos picos (niños y adultos jóvenes); '
-            'el valor del servicio es altamente asimétrico (cola larga a la derecha).'
-        ], color='secondary', className='mt-3')
-    ])
-
-
-# ── 2. Bivariado: scatter + boxplot ───────────────────────────────────
-def _eda_bivariado():
-    df_box = df_raw[df_raw['TotSer'] > 0].sample(min(20000, len(df_raw)), random_state=42)
-    fig_box = px.box(df_box, x='Estado_Texto', y='TotSer', log_y=True,
+    # Boxplot valor
+    fig_box = px.box(df_raw[df_raw['TotSer'] > 0].sample(min(10000, len(df_raw)), random_state=42),
+                     x='Estado_Texto', y='TotSer', log_y=True,
                      color='Estado_Texto',
-                     color_discrete_map={'Limpia':'#2ca02c','Glosada':'#d62728'},
-                     title='Valor del Servicio vs Estado (boxplot log)',
-                     template='plotly_dark',
-                     labels={'Estado_Texto':'Estado','TotSer':'TotSer (COP)'})
+                     color_discrete_map={'Limpia': '#28a745', 'Glosada': '#dc3545'},
+                     template=PLOTLY_TEMPLATE)
+    fig_box.update_layout(title='Valor del Servicio por Estado (log)',
+                          margin=dict(l=20, r=20, t=40, b=20))
 
-    df_scatter = df_raw.sample(min(5000, len(df_raw)), random_state=42)
-    fig_scatter = px.scatter(df_scatter[df_scatter['TotSer']>0],
-                             x='PacienteEdad', y='TotSer',
-                             color='Estado_Texto', log_y=True, opacity=0.5,
-                             color_discrete_map={'Limpia':'#2ca02c','Glosada':'#d62728'},
-                             title='Edad vs Valor del Servicio (muestra de 5 000 registros)',
-                             template='plotly_dark',
-                             labels={'PacienteEdad':'Edad (años)','TotSer':'TotSer (COP, log)'})
-
-    return html.Div([
-        dbc.Row([
-            dbc.Col(dcc.Graph(figure=fig_box), md=5),
-            dbc.Col(dcc.Graph(figure=fig_scatter), md=7),
-        ], className='mb-3 mt-3'),
-        dbc.Alert([
-            html.Strong('Interpretación: '),
-            'el rango intercuartílico de las facturas glosadas se ubica en valores ligeramente superiores '
-            'a las limpias, pero el solapamiento es amplio. El scatter muestra que clases limpia y glosada '
-            'se mezclan en todo el espacio: no hay frontera lineal entre ellas.'
-        ], color='secondary')
-    ])
-
-
-# ── 3. Riesgo por EPS y Área ──────────────────────────────────────────
-def _eda_eps_area():
-    promedio = df_raw['Estado_Glosa'].mean() * 100
-
-    # EPS top 10
+    # EPS
     top10_eps = df_raw['PlanBenNombre'].value_counts().nlargest(10).index
     df_eps = df_raw[df_raw['PlanBenNombre'].isin(top10_eps)]
     tasa_eps = (df_eps.groupby('PlanBenNombre')['Estado_Glosa'].mean() * 100).reset_index()
-    tasa_eps.columns = ['EPS', 'Tasa Glosa (%)']
-    tasa_eps = tasa_eps.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_eps = px.bar(tasa_eps, x='EPS', y='Tasa Glosa (%)',
-                     title='Probabilidad de Glosa por EPS (Top 10 por volumen)',
-                     template='plotly_dark', color='Tasa Glosa (%)',
-                     color_continuous_scale='RdYlGn_r')
+    tasa_eps.columns = ['EPS', 'Tasa']
+    tasa_eps = tasa_eps.sort_values('Tasa', ascending=False)
+    fig_eps = px.bar(tasa_eps, x='EPS', y='Tasa', color='Tasa',
+                     color_continuous_scale='RdYlGn_r', template=PLOTLY_TEMPLATE)
     fig_eps.add_hline(y=promedio, line_dash='dash', line_color='white',
-                      annotation_text=f'Promedio clínica: {promedio:.1f}%')
-    fig_eps.update_layout(xaxis_tickangle=-35)
+                      annotation_text=f'Promedio: {promedio:.1f}%')
+    fig_eps.update_layout(title='Tasa de Glosa por EPS (Top 10)',
+                          xaxis_tickangle=-35,
+                          margin=dict(l=20, r=20, t=40, b=80))
 
-    # Áreas
+    # Área
     top10_area = df_raw['AreaNombre'].value_counts().nlargest(10).index
     df_area = df_raw[df_raw['AreaNombre'].isin(top10_area)]
     tasa_area = (df_area.groupby('AreaNombre')['Estado_Glosa'].mean() * 100).reset_index()
-    tasa_area.columns = ['Área', 'Tasa Glosa (%)']
-    tasa_area = tasa_area.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_area = px.bar(tasa_area, x='Área', y='Tasa Glosa (%)',
-                      title='Probabilidad de Glosa por Área de Atención',
-                      template='plotly_dark', color='Tasa Glosa (%)',
-                      color_continuous_scale='RdYlGn_r')
-    fig_area.add_hline(y=promedio, line_dash='dash', line_color='white',
-                       annotation_text=f'Promedio: {promedio:.1f}%')
-    fig_area.update_layout(xaxis_tickangle=-35)
+    tasa_area.columns = ['Area', 'Tasa']
+    tasa_area = tasa_area.sort_values('Tasa', ascending=False)
+    fig_area = px.bar(tasa_area, x='Area', y='Tasa', color='Tasa',
+                      color_continuous_scale='RdYlGn_r', template=PLOTLY_TEMPLATE)
+    fig_area.add_hline(y=promedio, line_dash='dash', line_color='white')
+    fig_area.update_layout(title='Tasa de Glosa por Área de Atención',
+                           xaxis_tickangle=-35,
+                           margin=dict(l=20, r=20, t=40, b=80))
+
+    # Correlación
+    cols_num = ['PacienteEdad', 'Cantidad', 'ValPac', 'ValEnt', 'TotSer', 'Estado_Glosa']
+    cols_exist = [c for c in cols_num if c in df_raw.columns]
+    matriz = df_raw[cols_exist].corr(method='spearman').round(3)
+    fig_corr = px.imshow(matriz, text_auto=True, color_continuous_scale='RdBu_r',
+                         zmin=-1, zmax=1, template=PLOTLY_TEMPLATE)
+    fig_corr.update_layout(title='Matriz de Correlación de Spearman',
+                           margin=dict(l=20, r=20, t=40, b=20))
 
     return html.Div([
-        dcc.Graph(figure=fig_eps, className='mt-3'),
-        dcc.Graph(figure=fig_area),
-        dbc.Alert([
-            html.Strong('Interpretación: '),
-            'el riesgo de glosa varía drásticamente según la EPS pagadora y el área de atención. '
-            'Estas son dos de las variables categóricas con mayor poder predictivo en los modelos.'
-        ], color='secondary')
-    ])
-
-
-# ── 4. Riesgo por Servicio ────────────────────────────────────────────
-def _eda_servicios():
-    promedio = df_raw['Estado_Glosa'].mean() * 100
-
-    # Servicio
-    top10_serv = df_raw['ServicioNombre'].value_counts().nlargest(10).index
-    df_serv = df_raw[df_raw['ServicioNombre'].isin(top10_serv)]
-    tasa_serv = (df_serv.groupby('ServicioNombre')['Estado_Glosa'].mean()*100).reset_index()
-    tasa_serv.columns = ['Servicio', 'Tasa Glosa (%)']
-    tasa_serv = tasa_serv.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_serv = px.bar(tasa_serv, x='Servicio', y='Tasa Glosa (%)',
-                      title='Probabilidad de Glosa por Servicio/Insumo (Top 10)',
-                      template='plotly_dark', color='Tasa Glosa (%)',
-                      color_continuous_scale='RdYlGn_r')
-    fig_serv.add_hline(y=promedio, line_dash='dash', line_color='white',
-                       annotation_text=f'Promedio: {promedio:.1f}%')
-    fig_serv.update_layout(xaxis_tickangle=-35)
-
-    # Grupo de servicio
-    top10_gr = df_raw['GrupoSerNombre'].value_counts().nlargest(10).index
-    df_gr = df_raw[df_raw['GrupoSerNombre'].isin(top10_gr)]
-    tasa_gr = (df_gr.groupby('GrupoSerNombre')['Estado_Glosa'].mean()*100).reset_index()
-    tasa_gr.columns = ['Grupo', 'Tasa Glosa (%)']
-    tasa_gr = tasa_gr.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_gr = px.bar(tasa_gr, x='Grupo', y='Tasa Glosa (%)',
-                    title='Probabilidad de Glosa por Grupo de Servicio',
-                    template='plotly_dark', color='Tasa Glosa (%)',
-                    color_continuous_scale='RdYlGn_r')
-    fig_gr.add_hline(y=promedio, line_dash='dash', line_color='white',
-                     annotation_text=f'Promedio: {promedio:.1f}%')
-    fig_gr.update_layout(xaxis_tickangle=-35)
-
-    # Top motivos de objeción (solo glosadas)
-    df_glosadas = df_raw[df_raw['Estado_Glosa']==1]
-    if 'NombreObjeción' in df_glosadas.columns:
-        top_obj = df_glosadas['NombreObjeción'].value_counts().nlargest(10).reset_index()
-        top_obj.columns = ['Motivo', 'Cantidad']
-        fig_obj = px.bar(top_obj, x='Cantidad', y='Motivo', orientation='h',
-                         title='Top 10 Motivos de Objeción (solo facturas glosadas)',
-                         template='plotly_dark', color='Cantidad',
-                         color_continuous_scale='Reds')
-        fig_obj.update_layout(yaxis={'categoryorder':'total ascending'})
-    else:
-        fig_obj = go.Figure()
-
-    return html.Div([
-        dcc.Graph(figure=fig_serv, className='mt-3'),
-        dcc.Graph(figure=fig_gr),
-        dcc.Graph(figure=fig_obj),
-        dbc.Alert([
-            html.Strong('Interpretación: '),
-            'algunos servicios e insumos tienen tasa de glosa > 70%, mucho más alta que el promedio. '
-            'Los motivos de objeción más frecuentes están relacionados con tarifas y procedimientos.'
-        ], color='secondary')
-    ])
-
-
-# ── 5. Demográficos ───────────────────────────────────────────────────
-def _eda_demograficos():
-    promedio = df_raw['Estado_Glosa'].mean() * 100
-
-    # Presentación servicio
-    tasa_pres = (df_raw.groupby('PresentacionServicio')['Estado_Glosa'].mean()*100).reset_index()
-    tasa_pres.columns = ['Presentación', 'Tasa Glosa (%)']
-    tasa_pres = tasa_pres.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_pres = px.bar(tasa_pres, x='Presentación', y='Tasa Glosa (%)',
-                      title='Probabilidad de Glosa por Modalidad de Servicio',
-                      template='plotly_dark', color='Tasa Glosa (%)',
-                      color_continuous_scale='RdYlGn_r')
-    fig_pres.add_hline(y=promedio, line_dash='dash', line_color='white',
-                       annotation_text=f'Promedio: {promedio:.1f}%')
-
-    # Tipo de documento (top 5)
-    top5_doc = df_raw['PacienteTipoDoc'].value_counts().nlargest(5).index
-    df_doc = df_raw[df_raw['PacienteTipoDoc'].isin(top5_doc)]
-    tasa_doc = (df_doc.groupby('PacienteTipoDoc')['Estado_Glosa'].mean()*100).reset_index()
-    tasa_doc.columns = ['Tipo Doc', 'Tasa Glosa (%)']
-    tasa_doc = tasa_doc.sort_values('Tasa Glosa (%)', ascending=False)
-    fig_doc = px.bar(tasa_doc, x='Tipo Doc', y='Tasa Glosa (%)',
-                     title='Probabilidad de Glosa por Tipo de Documento del Paciente',
-                     template='plotly_dark', color='Tasa Glosa (%)',
-                     color_continuous_scale='RdYlGn_r')
-    fig_doc.add_hline(y=promedio, line_dash='dash', line_color='white',
-                      annotation_text=f'Promedio: {promedio:.1f}%')
-
-    return html.Div([
+        section_header('Análisis Exploratorio de Datos',
+                       'Univariado, bivariado y correlaciones sobre el dataset unificado'),
         dbc.Row([
-            dbc.Col(dcc.Graph(figure=fig_pres), md=6),
-            dbc.Col(dcc.Graph(figure=fig_doc), md=6),
-        ], className='mb-3 mt-3'),
+            dbc.Col(kpi_card('Registros', '88,480',     '45 columnas',      'info',    'bi-database'),     md=3),
+            dbc.Col(kpi_card('Limpias',   '49,525',     '56% del total',    'success', 'bi-check'),        md=3),
+            dbc.Col(kpi_card('Glosadas',  '38,955',     '44% del total',    'danger',  'bi-x'),            md=3),
+            dbc.Col(kpi_card('Edad media','40 años',    'Mediana: 31 años', 'warning', 'bi-person'),       md=3),
+        ], className='g-3 mb-4'),
+        dbc.Row([
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_pie),  type='circle'), md=4),
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_edad), type='circle'), md=8),
+        ], className='g-3 mb-3'),
+        dbc.Row([
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_box),  type='circle'), md=4),
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_corr), type='circle'), md=8),
+        ], className='g-3 mb-3'),
+        dbc.Row([
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_eps),  type='circle'), md=6),
+            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_area), type='circle'), md=6),
+        ], className='g-3'),
         dbc.Alert([
-            html.Strong('Interpretación: '),
-            'la modalidad No_Quirúrgico tiene la mayor tasa de glosa. Por tipo de documento, '
-            'los recién nacidos (Certificado de Nacido Vivo) casi nunca son glosados, mientras que '
-            'los adultos con Cédula tienen tasas cercanas al promedio.'
-        ], color='secondary')
+            html.I(className='bi bi-lightbulb me-2'),
+            html.Strong('Hallazgo clave: '),
+            'todas las correlaciones de Spearman con Estado_Glosa son menores a 0.10. ',
+            'El patrón de glosa es no lineal y depende de combinaciones EPS × Servicio × Área, ',
+            'lo que justifica el uso de modelos de ensamble basados en árboles.'
+        ], color='info', className='mt-3'),
     ])
 
 
-# ── 6. Correlaciones ──────────────────────────────────────────────────
-def _eda_correlaciones():
-    cols_num = ['PacienteEdad','Cantidad','ValPac','ValEnt','TotSer','Estado_Glosa']
-    cols_existentes = [c for c in cols_num if c in df_raw.columns]
-    matriz = df_raw[cols_existentes].corr(method='spearman').round(3)
-
-    fig_corr = px.imshow(matriz, text_auto=True, aspect='auto',
-                         color_continuous_scale='RdBu_r', zmin=-1, zmax=1,
-                         title='Matriz de Correlación de Spearman — Variables Numéricas',
-                         template='plotly_dark')
-
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 3 — Preprocesamiento
+# ═════════════════════════════════════════════════════════════════════
+def page_preprocesamiento():
     return html.Div([
-        dcc.Graph(figure=fig_corr, className='mt-3'),
+        section_header('Preprocesamiento y Particionado',
+                       'Detección y mitigación de fuga de datos · ColumnTransformer · GroupShuffleSplit'),
         dbc.Alert([
-            html.Strong('Hallazgo principal: '),
-            html.Br(),
-            '• Máxima correlación con Estado_Glosa: ValEnt = 0.085 — ninguna variable numérica '
-            'supera ρ = 0.10 con el target.',
-            html.Br(),
-            '• TotSer y ValEnt están casi perfectamente correlacionadas (ρ ≈ 0.99): son redundantes.',
-            html.Br(),
-            '• Conclusión: el patrón de glosa NO es lineal ni capturado por variables numéricas solas. '
-            'Esto justifica el uso de modelos de ensamble basados en árboles que capturen interacciones '
-            'multidimensionales entre las variables categóricas.'
-        ], color='info')
+            html.H5([html.I(className='bi bi-exclamation-triangle me-2'),
+                     'Hallazgo crítico: fuga por agrupación de ingresos'], className='alert-heading'),
+            html.Hr(),
+            html.P(['Cada ingreso hospitalario contiene ~19 ítems de facturación, todos con el mismo ',
+                    html.Code('Estado_Glosa'), '. Con split aleatorio convencional, los ítems se reparten entre train y test, ',
+                    'inflando artificialmente el AUC a ~0.95.']),
+            html.P([html.Strong('Solución: '), html.Code('GroupShuffleSplit'), ' por ',
+                    html.Code('IngresoConsecutivo'), '. AUC honesto: 0.87.'],
+                   className='mb-0'),
+        ], color='warning', className='mb-4'),
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-funnel me-2'), html.Strong('Variables eliminadas')]),
+                dbc.CardBody(dash_table.DataTable(
+                    data=[
+                        {'Columna': 'ValorObjetado', 'Razón': 'Fuga directa del target'},
+                        {'Columna': 'NombreObjeción, CodigoObjecion', 'Razón': 'Post-auditoría'},
+                        {'Columna': 'RazonSocial, UnidadesObjetadas', 'Razón': '100% nulas en facturas limpias'},
+                        {'Columna': 'PacienteCodigo, MedicoCodigo', 'Razón': 'IDs → memorización'},
+                        {'Columna': 'IngresoConsecutivo', 'Razón': 'Solo se usa para hacer el split, no como feature'},
+                        {'Columna': 'Fechas (Radicación, Objeción, etc.)', 'Razón': 'Existen solo después de la auditoría'},
+                    ],
+                    columns=[{'name': c, 'id': c} for c in ['Columna', 'Razón']],
+                    style_header={'backgroundColor': '#dc3545', 'color': 'white', 'fontWeight': 'bold'},
+                    style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
+                    style_cell={'textAlign': 'left', 'padding': '10px', 'border': '1px solid #333'},
+                ))
+            ]), md=6),
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-diagram-3 me-2'), html.Strong('Pipeline metodológico')]),
+                dbc.CardBody(dcc.Markdown('''
+**1. ColumnTransformer**: orquesta dos ramas:
+- **Numéricas** → `SimpleImputer(strategy='median')`
+- **Categóricas** → `SimpleImputer(strategy='most_frequent')` + `OrdinalEncoder(unknown_value=-1)`
+
+**2. GroupShuffleSplit 80/20** por `IngresoConsecutivo` — garantiza no fuga.
+
+**3. GridSearchCV con CV=5** sobre el conjunto de entrenamiento.
+
+**4. Evaluación final** sobre el conjunto de prueba intacto.
+                '''))
+            ]), md=6),
+        ], className='g-3 mb-3'),
+        dbc.Card([
+            dbc.CardHeader([html.I(className='bi bi-check2-square me-2'), html.Strong('Decisiones metodológicas conscientes')]),
+            dbc.CardBody(dcc.Markdown('''
+- **No se aplica SMOTE**: el balance natural 56/44 es operativamente óptimo.
+- **No se aplica StandardScaler** (excepto para MLP): los modelos de árboles son invariantes a transformaciones monotónicas.
+- **No se transforma logaritmicamente TotSer**: los árboles no requieren normalidad.
+- **Se conservan los outliers**: representan atenciones de alta complejidad (UCI, urgencias).
+- **Scoring `f1_macro`** para optimización: balancea precisión y recall por igual en ambas clases.
+            '''))
+        ]),
     ])
 
 
-# ════════════════════════════════════════════════════════════════════
-# TAB 3 — PREPROCESAMIENTO
-# ════════════════════════════════════════════════════════════════════
-def tab_preprocesamiento():
-    # Alerta de fuga
-    alert_fuga = dbc.Alert([
-        html.H5('⚠️ Hallazgo crítico: fuga de datos por agrupación de ingresos', className='alert-heading'),
-        html.Hr(),
-        html.P([
-            'Cada ', html.Code('IngresoConsecutivo'),
-            ' (estancia hospitalaria) contiene en promedio ',
-            html.Strong('~19 ítems de facturación'),
-            ', y todos comparten el mismo valor de ', html.Code('Estado_Glosa'),
-            ' (todos limpios o todos glosados).'
-        ]),
-        html.P([
-            'Con un ', html.Code('train_test_split'), ' aleatorio convencional, ítems del mismo ingreso '
-            'caen en train y test al mismo tiempo: el modelo memoriza la identidad del ingreso en lugar de '
-            'aprender el patrón de glosa. El AUC se infla artificialmente a ~0.94.'
-        ]),
-        html.P([
-            '✅ Solución implementada: ', html.Strong('GroupShuffleSplit'),
-            ' por ', html.Code('IngresoConsecutivo'), ' — todos los ítems de un ingreso quedan completamente '
-            'en train o completamente en test, garantizando evaluación honesta sobre ingresos nuevos. '
-            'El AUC real cae a ~0.87, que sí refleja el desempeño en producción.'
-        ], className='mb-0')
-    ], color='warning', className='mb-3')
-
-    # Columnas eliminadas
-    columnas_table = dash_table.DataTable(
-        data=[
-            {'Columna': 'ValorObjetado', 'Tipo de problema': 'Fuga directa (target)', 'Razón': 'Es la columna usada para construir Estado_Glosa'},
-            {'Columna': 'NombreObjeción, CodigoObjecion', 'Tipo de problema': 'Fuga post-auditoría', 'Razón': 'Solo existen para facturas ya glosadas'},
-            {'Columna': 'RazonSocial', 'Tipo de problema': 'Fuga estructural', 'Razón': '100% nula en facturas limpias (solo aparece en módulo de glosas)'},
-            {'Columna': 'UnidadesObjetadas', 'Tipo de problema': 'Fuga estructural', 'Razón': '100% nula en facturas limpias'},
-            {'Columna': 'PacienteCodigo, MedicoCodigo', 'Tipo de problema': 'Memorización', 'Razón': 'Identificadores únicos: el modelo memoriza al paciente/médico'},
-            {'Columna': 'IngresoConsecutivo', 'Tipo de problema': 'Agrupación', 'Razón': 'Identifica el grupo: usado solo para hacer el split, no como feature'},
-            {'Columna': 'FechaRadicacion, FechaObjecion, etc.', 'Tipo de problema': 'Fuga temporal', 'Razón': 'Existen solo después de la radicación/auditoría'},
-        ],
-        columns=[{'name': c, 'id': c} for c in ['Columna', 'Tipo de problema', 'Razón']],
-        style_header={'backgroundColor':'#d62728','color':'white','fontWeight':'bold'},
-        style_data={'backgroundColor':'#222','color':'white'},
-        style_cell={'textAlign':'left','padding':'8px','whiteSpace':'normal'},
-    )
-
-    card_columnas = dbc.Card([
-        dbc.CardHeader(html.H5('Variables eliminadas y razones')),
-        dbc.CardBody(columnas_table)
-    ], className='mb-3')
-
-    # Pipeline metodológico
-    card_pipeline = dbc.Card([
-        dbc.CardHeader(html.H5('Pipeline metodológico aplicado')),
-        dbc.CardBody([
-            dcc.Markdown('''
-**1. Limpieza de variables fugadas** — eliminación de las columnas listadas arriba.
-
-**2. División por grupos (GroupShuffleSplit 80/20)** — separar por `IngresoConsecutivo`
-para garantizar que ningún ingreso aparezca en train Y test simultáneamente.
-
-**3. Preprocesador dentro de Pipeline**:
-   - Variables **numéricas** → `SimpleImputer(strategy='median')` (robusto frente a outliers)
-   - Variables **categóricas** → `SimpleImputer(strategy='most_frequent')` + `OrdinalEncoder` con `unknown_value=-1`
-   - El imputador se calcula **solo sobre train** dentro de cada fold de CV (evita fuga estadística)
-
-**4. Validación cruzada estratificada (CV=5) sobre el conjunto de entrenamiento**
-para optimizar hiperparámetros mediante GridSearchCV.
-
-**5. Evaluación final sobre el conjunto de prueba** intacto, no visto por el modelo.
-            ''')
-        ])
-    ], className='mb-3')
-
-    # Decisiones de modelado
-    card_decisiones = dbc.Card([
-        dbc.CardHeader(html.H5('Decisiones metodológicas conscientes')),
-        dbc.CardBody(dcc.Markdown('''
-- **No se aplica SMOTE u oversampling**: el balance natural 56/44 es operativamente óptimo y
-  refleja la realidad del proceso de auditoría de la clínica.
-
-- **No se aplica StandardScaler ni normalización**: los modelos basados en árboles
-  (Decision Tree, Random Forest, XGBoost) son invariantes a transformaciones monotónicas.
-
-- **No se transforma logaritmicamente TotSer**: aunque la variable es altamente asimétrica,
-  los árboles no requieren normalidad de distribución.
-
-- **Se conservan los outliers**: representan atenciones de alta complejidad (UCI, urgencias)
-  con alto impacto financiero — son justamente las facturas más críticas para predecir.
-
-- **Se usa `f1_macro` como scoring**: balancea precisión y recall por igual sobre ambas clases,
-  reflejando el objetivo operativo de no perder glosas (recall) sin saturar al equipo de
-  auditoría con falsos positivos (precisión).
-        '''))
-    ])
-
-    return html.Div([alert_fuga, card_columnas, card_pipeline, card_decisiones])
-
-
-# ════════════════════════════════════════════════════════════════════
-# TAB 3 — MODELOS
-# ════════════════════════════════════════════════════════════════════
-def tab_modelos():
-    # Selector de métrica
-    selector = dbc.Row([
-        dbc.Col(html.Label('Métrica a visualizar:', className='fw-bold'), md=2),
-        dbc.Col(dcc.Dropdown(
-            id='metrica-dropdown',
-            options=[{'label': m, 'value': m}
-                     for m in ['AUC-ROC', 'F1-Macro', 'Accuracy', 'Precision', 'Recall']],
-            value='AUC-ROC', clearable=False,
-            style={'color':'#000'}
-        ), md=3),
-    ], className='mb-3 align-items-center')
-
-    tabla = dash_table.DataTable(
-        data=MODELOS.round(4).to_dict('records'),
-        columns=[{'name': c, 'id': c} for c in MODELOS.columns],
-        style_table={'overflowX': 'auto'},
-        style_header={'backgroundColor':'#1A5490','color':'white','fontWeight':'bold'},
-        style_data={'backgroundColor':'#222','color':'white'},
-        style_data_conditional=[
-            {'if': {'filter_query': '{Modelo} = "9. WOA-XGBoost"'},
-             'backgroundColor': '#1A3A5C', 'fontWeight': 'bold', 'color': '#7EC8E3'},
-            {'if': {'filter_query': '{Modelo} = "8. XGBoost"'},
-             'backgroundColor': '#2C3E50', 'color': '#E8E8E8'},
-        ],
-        sort_action='native',
-    )
-
-    nota = dbc.Alert([
-        html.Strong('Nota metodológica: '), 'Los Modelos 4 y 5 (Logística L2/L1) obtienen AUC < 0.5 porque ',
-        'el OrdinalEncoder asigna orden artificial a variables nominales (códigos de EPS, áreas), ',
-        'generando señal espuria que el modelo lineal interpreta inversamente. ',
-        'Los modelos basados en árboles son inmunes a este problema.'
-    ], color='warning', className='mt-3')
-
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 4 — Modelos
+# ═════════════════════════════════════════════════════════════════════
+def page_modelos():
     return html.Div([
-        selector,
-        dcc.Graph(id='grafico-modelos'),
-        html.H6('Tabla completa de métricas', className='mt-4 mb-2'),
-        tabla,
-        nota,
+        section_header('Comparativa de los 10 Modelos Evaluados',
+                       'Filtra por métrica y compara el desempeño en el conjunto de prueba'),
+        dbc.Row([
+            dbc.Col([
+                dbc.Label('Métrica a visualizar', className='fw-bold mb-2'),
+                dcc.Dropdown(
+                    id='metrica-dropdown',
+                    options=[{'label': m, 'value': m} for m in ['AUC-ROC', 'F1-Macro', 'Accuracy', 'Precision', 'Recall']],
+                    value='AUC-ROC', clearable=False,
+                    style={'color': '#000'}),
+            ], md=4),
+        ], className='mb-3'),
+        dcc.Loading(dcc.Graph(id='grafico-modelos'), type='circle'),
+        html.Div([
+            html.H5('Tabla completa de métricas', className='mt-4 mb-3 fw-bold'),
+            dash_table.DataTable(
+                data=MODELOS.round(4).to_dict('records'),
+                columns=[{'name': c, 'id': c} for c in MODELOS.columns],
+                style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
+                style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
+                style_cell={'textAlign': 'left', 'padding': '10px', 'border': '1px solid #333'},
+                style_data_conditional=[
+                    {'if': {'filter_query': '{Modelo} = "10. WOA-XGBoost"'},
+                     'backgroundColor': '#1A3A5C', 'fontWeight': 'bold', 'color': '#7EC8E3'},
+                    {'if': {'filter_query': '{Modelo} = "9. XGBoost"'},
+                     'backgroundColor': '#2C3E50'},
+                ],
+                sort_action='native',
+            ),
+        ]),
+        dbc.Alert([
+            html.I(className='bi bi-info-circle me-2'),
+            html.Strong('Nota metodológica: '),
+            'los modelos lineales (Logística L1/L2) obtienen AUC < 0.5 porque el OrdinalEncoder ',
+            'asigna orden artificial a variables nominales (códigos de EPS, áreas). ',
+            'Los modelos basados en árboles son inmunes a este problema.'
+        ], color='secondary', className='mt-3'),
     ])
 
 
-@app.callback(Output('grafico-modelos', 'figure'), Input('metrica-dropdown', 'value'))
-def actualizar_grafico(metrica):
-    df_sorted = MODELOS.sort_values(metrica, ascending=False)
-    fig = px.bar(
-        df_sorted, x='Modelo', y=metrica,
-        color='Modelo', color_discrete_sequence=COLORES_MODELOS,
-        title=f'Comparativa de Modelos — {metrica}',
-        template='plotly_dark', text=metrica,
-    )
+@callback(Output('grafico-modelos', 'figure'), Input('metrica-dropdown', 'value'))
+def actualizar_grafico_modelos(metrica):
+    df_sort = MODELOS.sort_values(metrica, ascending=False)
+    fig = px.bar(df_sort, x='Modelo', y=metrica, color='Modelo',
+                 color_discrete_sequence=COLORES_MODELOS, text=metrica,
+                 template=PLOTLY_TEMPLATE)
     fig.update_traces(texttemplate='%{text:.4f}', textposition='outside')
     fig.update_layout(showlegend=False, xaxis_tickangle=-25,
-                      yaxis_range=[0, min(1.05, df_sorted[metrica].max() * 1.15)])
+                      yaxis_range=[0, min(1.05, df_sort[metrica].max() * 1.15)],
+                      title=f'Comparativa de los 10 Modelos — {metrica}',
+                      margin=dict(l=20, r=20, t=60, b=100))
     if metrica == 'AUC-ROC':
         fig.add_hline(y=0.9, line_dash='dot', line_color='yellow',
-                      annotation_text='Umbral excelente (0.90)')
+                      annotation_text='Excelente (0.90)')
     return fig
 
 
-# ════════════════════════════════════════════════════════════════════
-# TAB 4 — WOA-XGBoost
-# ════════════════════════════════════════════════════════════════════
-def tab_woa():
-    # Comparativa XGBoost vs WOA-XGBoost (modelo final)
-    metricas = ['AUC-ROC', 'F1-Macro', 'Accuracy', 'Precision', 'Recall']
-    xgb_vals = [0.8748, 0.7881, 0.7883, 0.7950, 0.7990]
-    woa_vals  = [0.8744, 0.8041, 0.8046, 0.8078, 0.8132]
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 5 — Modelo Final (WOA-XGBoost)
+# ═════════════════════════════════════════════════════════════════════
+def page_final():
+    metricas = ['Accuracy', 'Precision', 'Recall', 'F1-Macro', 'AUC-ROC']
+    xgb_vals = [0.7883, 0.7950, 0.7990, 0.7881, 0.8748]
+    woa_vals = [0.8048, 0.8094, 0.8143, 0.8044, 0.8715]
 
     fig_comp = go.Figure()
-    fig_comp.add_trace(go.Bar(name='XGBoost (GridSearch)', x=metricas, y=xgb_vals,
-                               marker_color='#e377c2', text=[f'{v:.4f}' for v in xgb_vals],
-                               textposition='outside'))
-    fig_comp.add_trace(go.Bar(name='WOA-XGBoost — Modelo Final', x=metricas, y=woa_vals,
-                               marker_color='#1A5490', text=[f'{v:.4f}' for v in woa_vals],
-                               textposition='outside'))
-    fig_comp.update_layout(
-        barmode='group', template='plotly_dark',
-        title='XGBoost-GridSearch vs WOA-XGBoost — Métricas en Conjunto de Prueba',
-        yaxis_range=[0.3, 0.95], legend=dict(orientation='h', y=1.1)
-    )
+    fig_comp.add_trace(go.Bar(name='XGBoost (Modelo 9)', x=metricas, y=xgb_vals,
+                              marker_color='#e377c2',
+                              text=[f'{v:.4f}' for v in xgb_vals],
+                              textposition='outside'))
+    fig_comp.add_trace(go.Bar(name='WOA-XGBoost (Modelo Final)', x=metricas, y=woa_vals,
+                              marker_color='#1A5490',
+                              text=[f'{v:.4f}' for v in woa_vals],
+                              textposition='outside'))
+    fig_comp.update_layout(barmode='group', template=PLOTLY_TEMPLATE,
+                           title='Comparativa: XGBoost vs WOA-XGBoost (Test)',
+                           yaxis_range=[0.7, 0.92],
+                           legend=dict(orientation='h', y=1.1),
+                           margin=dict(l=20, r=20, t=60, b=20))
 
-    # Tabla de diferencias (WOA − XGBoost)
-    diffs = [round(w - x, 4) for x, w in zip(xgb_vals, woa_vals)]
-    tabla_comp = dash_table.DataTable(
-        data=[{'Métrica': m, 'XGBoost': f'{x:.4f}', 'WOA-XGBoost': f'{w:.4f}',
-               'Diferencia (WOA−XGB)': f'{d:+.4f}',
-               'Ganador': 'WOA-XGBoost' if d > 0 else 'XGBoost'}
-              for m, x, w, d in zip(metricas, xgb_vals, woa_vals, diffs)],
-        columns=[{'name': c, 'id': c} for c in
-                  ['Métrica','XGBoost','WOA-XGBoost','Diferencia (WOA−XGB)','Ganador']],
-        style_header={'backgroundColor':'#1A5490','color':'white','fontWeight':'bold'},
-        style_data={'backgroundColor':'#222','color':'white'},
-        style_data_conditional=[
-            {'if': {'filter_query': '{Ganador} = "WOA-XGBoost"'},
-             'color': '#7EC8E3', 'fontWeight': 'bold'},
-        ],
-    )
+    return html.Div([
+        section_header('Modelo Final: WOA-XGBoost',
+                       'Whale Optimization Algorithm aplicado a XGBoost · implementación propia'),
+        dbc.Row([
+            dbc.Col(kpi_card('Accuracy',  '0.8048', '+1.65% vs XGBoost', 'success', 'bi-bullseye'),    md=3),
+            dbc.Col(kpi_card('F1-Macro',  '0.8044', 'Mejor de los 10',   'primary', 'bi-trophy'),      md=3),
+            dbc.Col(kpi_card('Recall',    '0.8143', '81.4% de glosas detectadas', 'warning', 'bi-check2-circle'), md=3),
+            dbc.Col(kpi_card('AUC-ROC',   '0.8715', '−0.0033 vs XGBoost', 'info', 'bi-graph-up'),      md=3),
+        ], className='g-3 mb-4'),
+        dcc.Loading(dcc.Graph(figure=fig_comp), type='circle'),
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-info-circle me-2'),
+                                html.Strong('¿Qué es WOA-XGBoost?')]),
+                dbc.CardBody(dcc.Markdown('''
+El **Whale Optimization Algorithm** (Mirjalili & Lewis, 2016) es un metaheurístico bioinspirado
+en la caza de las ballenas jorobadas. Imita tres comportamientos: cerco a la presa, ataque en
+espiral y búsqueda exploratoria.
 
-    cards_woa = dbc.Row([
-        _metrica_card('AUC-ROC',  '0.8744', 'Empate estadístico (DeLong p=0.607)', 'primary'),
-        _metrica_card('F1-Macro', '0.8041', 'Mejor de los 10 modelos', 'success'),
-        _metrica_card('Recall',   '0.8132', '81.3% de glosas detectadas', 'warning'),
-        _metrica_card('Accuracy', '0.8046', '80.5% de facturas correctas', 'info'),
-    ], className='mb-4')
-
-    info_woa = dbc.Card([
-        dbc.CardHeader(html.H5('¿Qué es WOA y por qué gana en 4 de 5 métricas?')),
-        dbc.CardBody(dcc.Markdown('''
-El **Whale Optimization Algorithm** (Mirjalili & Lewis, 2016) es un algoritmo bioinspirado
-en la caza cooperativa de las ballenas jorobadas. Imita tres comportamientos:
-
-1. **Cerco a la presa**: las ballenas se acercan progresivamente al mejor candidato.
-2. **Ataque en espiral**: trayectorias helicoidales que permiten escapar de óptimos locales.
-3. **Búsqueda exploratoria**: cuando están lejos del mejor, exploran zonas nuevas.
-
-Implementé el algoritmo **desde cero** con cuatro adaptaciones al problema (inicialización
-estratificada, reducción suave del paso, memoria de mejores soluciones, aceptación condicional).
-El WOA realizó **1 350 evaluaciones** (25 épocas × 18 ballenas × 3 folds) frente a las 180 del
-GridSearch.
-
-**Resultados:** WOA-XGBoost **gana en 4 de 5 métricas** (Accuracy, Precision, Recall y F1-Macro)
-por márgenes consistentes de 1.3 a 1.6 puntos porcentuales. El AUC es 0.0004 menor que XGBoost-
-GridSearch, pero la prueba de DeLong (p = 0.607) confirma que esa diferencia **no es estadísticamente
-significativa**: los dos modelos están empatados en AUC.
-
-**¿Por qué se selecciona como modelo final?**
-
-1. Ganancia consistente en 4 métricas, no producto del azar.
-2. **Recall superior (0.8132 vs 0.7990)** — la métrica más crítica para detectar glosas reales.
-3. Empate estadístico en AUC: no se pierde discriminación.
-4. Mayor cobertura del espacio de hiperparámetros (1 350 vs 180 evaluaciones).
-        '''))
-    ], className='mb-3')
-
-    return html.Div([cards_woa, dcc.Graph(figure=fig_comp), html.Div(tabla_comp, className='mt-3'), info_woa])
-
-
-def _metrica_card(titulo, valor, subtexto, color):
-    return dbc.Col(dbc.Card([
-        dbc.CardBody([
-            html.H6(titulo, className='text-muted mb-1'),
-            html.H3(valor, className=f'text-{color} fw-bold mb-1'),
-            html.Small(subtexto, className='text-muted'),
-        ])
-    ], color='dark', outline=True), md=3)
-
-
-# ════════════════════════════════════════════════════════════════════
-# TAB 5 — VALIDACIÓN Y CONCLUSIONES
-# ════════════════════════════════════════════════════════════════════
-def tab_conclusiones():
-    # Modelo final card
-    modelo_final = dbc.Card([
-        dbc.CardHeader(html.H5('🏆 Modelo Final: WOA-XGBoost')),
-        dbc.CardBody([
-            dbc.Row([
-                dbc.Col([
-                    dcc.Markdown('''
-**WOA-XGBoost gana en 4 de 5 métricas evaluadas:**
-
-| Métrica | XGBoost | WOA-XGBoost | Ganador |
-|---------|---------|-------------|---------|
-| Accuracy | 0.7883 | **0.8046** | WOA (+0.0163) |
-| Precision | 0.7950 | **0.8078** | WOA (+0.0128) |
-| Recall | 0.7990 | **0.8132** | WOA (+0.0142) |
-| F1-Macro | 0.7881 | **0.8041** | WOA (+0.0160) |
-| AUC-ROC | **0.8748** | 0.8744 | XGBoost (+0.0004) |
-
-XGBoost gana solo en AUC por 0.0004 — la prueba de DeLong (p=0.607) confirma que esa
-diferencia **no es estadísticamente significativa**. Los dos modelos están empatados en AUC.
-                    '''),
-                ], md=7),
-                dbc.Col([
-                    dbc.Alert([
-                        html.H5('Justificación de la selección', className='alert-heading'),
-                        html.Hr(),
-                        html.P('WOA-XGBoost se elige como modelo final porque gana de '
-                               'forma consistente en cuatro métricas con márgenes de 1.3 a 1.6 puntos.'),
-                        html.P('El Recall superior (0.8132 vs 0.7990) es crítico: '
-                               'el modelo detecta más glosas reales antes de radicar — '
-                               'eso reduce directamente el ciclo de cartera de la clínica.',
-                               className='mb-0'),
-                    ], color='success'),
-                ], md=5),
-            ])
-        ])
-    ], className='mb-3')
-
-    # Limitaciones
-    limitaciones = dbc.Card([
-        dbc.CardHeader(html.H5('Limitaciones y Trabajo Futuro')),
-        dbc.CardBody(dash_table.DataTable(
-            data=[
-                {'Limitación': 'Concept drift', 'Impacto': 'El modelo pierde precisión cuando las EPS cambian sus criterios', 'Acción': 'Re-entrenamiento trimestral'},
-                {'Limitación': 'Split no temporal', 'Impacto': 'Puede sobrestimar el rendimiento en periodos futuros', 'Acción': 'TimeSeriesSplit con FechaIngreso'},
-                {'Limitación': 'Probabilidades no calibradas', 'Impacto': 'Umbral 0.5 puede no ser óptimo', 'Acción': 'CalibratedClassifierCV (isotonic)'},
-                {'Limitación': 'Explicabilidad individual', 'Impacto': 'No se sabe por qué una factura específica fue marcada', 'Acción': 'SHAP values sobre WOA-XGBoost'},
-                {'Limitación': 'Costo computacional WOA', 'Impacto': '~30 minutos de optimización offline', 'Acción': 'Ejecutar como job nocturno; despliegue solo del modelo final'},
-            ],
-            columns=[{'name': c, 'id': c} for c in ['Limitación','Impacto','Acción']],
-            style_header={'backgroundColor':'#1A5490','color':'white','fontWeight':'bold'},
-            style_data={'backgroundColor':'#222','color':'white'},
-            style_cell={'textAlign':'left','padding':'8px'},
-        ))
-    ], className='mb-3')
-
-    # Conclusión ejecutiva
-    conclusion = dbc.Card([
-        dbc.CardHeader(html.H5('Conclusión Ejecutiva')),
-        dbc.CardBody(dcc.Markdown('''
-Se evaluaron **10 modelos de Machine Learning** bajo un protocolo experimental riguroso
-(`GroupShuffleSplit` por ingreso hospitalario, mismo preprocesador, métricas estandarizadas).
-
-**Modelo seleccionado: WOA-XGBoost**
-- Gana en 4 de 5 métricas: Accuracy 0.8046, Precision 0.8078, Recall 0.8132, F1-Macro 0.8041.
-- Empata estadísticamente con XGBoost-GridSearch en AUC (DeLong p=0.607).
-- El Whale Optimization Algorithm está implementado desde cero con 4 adaptaciones al problema
-  y realiza 1 350 evaluaciones de hiperparámetros (vs 180 del GridSearch).
-
-**Impacto financiero:** con un Recall del 81.3%, el modelo detecta más de 8 de cada 10
-facturas con riesgo de glosa antes de su radicación, permitiendo corrección proactiva
-y reduciendo el ciclo de cartera de >120 días hacia el objetivo institucional de 30 días.
-
-**Aporte original:** primera aplicación documentada del Whale Optimization Algorithm
-a la predicción de glosas en el sistema de salud colombiano, con implementación propia
-desde cero y metodología rigurosa de limpieza de fuga de datos por agrupación de ingresos.
-
-*Referencias:* Mirjalili & Lewis (2016) · Arumugam et al. (2026) · Shrestha et al. (2025) · DeLong et al. (1988)
-        '''))
+Implementé el algoritmo **desde cero en NumPy** (sin usar librerías) con cuatro adaptaciones:
+inicialización estratificada, reducción suave del paso, memoria de mejores soluciones y
+aceptación condicional. La población de 18 ballenas exploró 1 350 combinaciones de
+hiperparámetros XGBoost durante 25 épocas (frente a 180 del GridSearch).
+                '''))
+            ], className='h-100'), md=6),
+            dbc.Col(dbc.Card([
+                dbc.CardHeader([html.I(className='bi bi-sliders me-2'),
+                                html.Strong('Hiperparámetros encontrados')]),
+                dbc.CardBody(dash_table.DataTable(
+                    data=[
+                        {'Parámetro': 'n_estimators',     'GridSearch': '300', 'WOA': '386'},
+                        {'Parámetro': 'max_depth',        'GridSearch': '5',   'WOA': '10'},
+                        {'Parámetro': 'learning_rate',    'GridSearch': '0.1', 'WOA': '0.2033'},
+                        {'Parámetro': 'subsample',        'GridSearch': '0.8', 'WOA': '0.7511'},
+                        {'Parámetro': 'colsample_bytree', 'GridSearch': '—',   'WOA': '0.6554'},
+                        {'Parámetro': 'gamma',            'GridSearch': '—',   'WOA': '4.998'},
+                        {'Parámetro': 'min_child_weight', 'GridSearch': '—',   'WOA': '1'},
+                    ],
+                    columns=[{'name': c, 'id': c} for c in ['Parámetro', 'GridSearch', 'WOA']],
+                    style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
+                    style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
+                    style_cell={'textAlign': 'left', 'padding': '8px'},
+                ))
+            ], className='h-100'), md=6),
+        ], className='g-3 mt-3'),
     ])
 
-    return html.Div([modelo_final, limitaciones, conclusion])
+
+# ═════════════════════════════════════════════════════════════════════
+# PÁGINA 6 — Conclusiones
+# ═════════════════════════════════════════════════════════════════════
+def page_conclusiones():
+    return html.Div([
+        section_header('Validación Estadística y Conclusiones',
+                       'Prueba de DeLong · análisis CV vs Test · trabajos futuros'),
+        dbc.Card([
+            dbc.CardHeader([html.I(className='bi bi-clipboard-data me-2'),
+                            html.Strong('Prueba de DeLong — XGBoost vs WOA-XGBoost')]),
+            dbc.CardBody(dbc.Row([
+                dbc.Col([
+                    dcc.Markdown('''
+**Hipótesis:**
+- H₀: AUC(XGBoost) = AUC(WOA-XGBoost)
+- H₁: AUC(XGBoost) ≠ AUC(WOA-XGBoost)
+
+**Resultado:**
+
+| Parámetro | Valor |
+|-----------|-------|
+| AUC WOA-XGBoost | 0.871478 |
+| AUC XGBoost | 0.874790 |
+| Diferencia | −0.003312 |
+| Estadístico Z | −3.6011 |
+| **p-valor** | **0.0003** |
+
+**Conclusión:** la diferencia en AUC es estadísticamente significativa
+(p = 0.0003) a favor de XGBoost, pero de **magnitud pequeña** (0.003).
+                    '''),
+                ], md=7),
+                dbc.Col(dbc.Alert([
+                    html.H5('¿Por qué WOA sigue siendo el modelo final?', className='alert-heading'),
+                    html.Hr(),
+                    html.P(['WOA gana en ', html.Strong('4 de 5 métricas'),
+                            ' por márgenes consistentes de 1.4–1.7 puntos.']),
+                    html.P(['El ', html.Strong('Recall superior'), ' (0.8143 vs 0.7990) es la ',
+                            'métrica más crítica para el negocio: detectar más glosas antes de radicar.'],
+                           className='mb-0'),
+                ], color='info'), md=5),
+            ])),
+        ], className='mb-3'),
+        dbc.Card([
+            dbc.CardHeader([html.I(className='bi bi-shield-check me-2'),
+                            html.Strong('Análisis del Gap CV vs Test')]),
+            dbc.CardBody(dcc.Markdown('''
+- **Validación Cruzada (5-fold sobre dataset completo):** AUC = 0.9526 (std = 0.0016)
+- **Test (GroupShuffleSplit honesto):** AUC = 0.8715
+- **Gap:** 0.0811 puntos
+
+La diferencia NO es un signo de mal modelo; es evidencia de que el `GroupShuffleSplit` por
+ingreso hospitalario es metodológicamente correcto. Sin esa partición, el AUC se inflaría
+artificialmente al ~0.95 (overfitting al nivel de ingreso).
+            '''))
+        ], className='mb-3'),
+        dbc.Card([
+            dbc.CardHeader([html.I(className='bi bi-list-check me-2'),
+                            html.Strong('Limitaciones y Trabajo Futuro')]),
+            dbc.CardBody(dash_table.DataTable(
+                data=[
+                    {'Limitación': 'Concept drift en políticas EPS',     'Mitigación': 'Re-entrenamiento trimestral con monitoreo'},
+                    {'Limitación': 'Validación no temporal',            'Mitigación': 'TimeSeriesSplit en versión 2'},
+                    {'Limitación': 'Probabilidades no calibradas',     'Mitigación': 'CalibratedClassifierCV (isotonic)'},
+                    {'Limitación': 'Explicabilidad individual',        'Mitigación': 'Aplicar SHAP sobre el WOA-XGBoost final'},
+                    {'Limitación': 'Costo computacional WOA (~68 min)', 'Mitigación': 'Ejecutar offline; desplegar solo el modelo final'},
+                ],
+                columns=[{'name': c, 'id': c} for c in ['Limitación', 'Mitigación']],
+                style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
+                style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
+                style_cell={'textAlign': 'left', 'padding': '10px'},
+            ))
+        ], className='mb-3'),
+        dbc.Card([
+            dbc.CardHeader([html.I(className='bi bi-bookmark-check me-2'),
+                            html.Strong('Conclusión Ejecutiva')]),
+            dbc.CardBody(dcc.Markdown('''
+Se evaluaron **10 modelos** de Machine Learning bajo un protocolo experimental riguroso.
+El modelo seleccionado es **WOA-XGBoost**: implementación propia del Whale Optimization
+Algorithm con cuatro adaptaciones al problema, aplicada a la optimización de hiperparámetros
+de XGBoost.
+
+**Aporte original:** primera aplicación documentada del WOA a la predicción de glosas en el
+sistema de salud colombiano, con implementación propia desde cero y metodología rigurosa
+de limpieza de fuga por agrupación de ingresos.
+
+**Impacto financiero esperado:** con un Recall del 81.4 %, el modelo detecta más de 8 de
+cada 10 facturas con riesgo de glosa antes de su radicación, reduciendo el ciclo de cartera
+de >120 días hacia el objetivo institucional de 30 días.
+
+*Referencias:* Mirjalili & Lewis (2016) · Arumugam et al. (2026) · Shrestha et al. (2025) · DeLong et al. (1988)
+            '''))
+        ]),
+    ])
 
 
-# ════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════
+# Router
+# ═════════════════════════════════════════════════════════════════════
+@callback(Output('page-content', 'children'), Input('url', 'pathname'))
+def render_page(pathname):
+    if pathname == '/' or pathname == '':       return page_inicio()
+    if pathname == '/eda':                       return page_eda()
+    if pathname == '/preprocesamiento':         return page_preprocesamiento()
+    if pathname == '/modelos':                   return page_modelos()
+    if pathname == '/final':                     return page_final()
+    if pathname == '/conclusiones':              return page_conclusiones()
+    return html.Div([
+        html.H1('404 — Página no encontrada', className='text-danger'),
+        html.P(f'La ruta {pathname} no existe en este dashboard.'),
+        dbc.Button('Volver al inicio', href='/', color='primary'),
+    ])
+
+
+# ═════════════════════════════════════════════════════════════════════
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8050))
     app.run(host='0.0.0.0', port=port, debug=False)

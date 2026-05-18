@@ -1,4 +1,12 @@
+# =========================================================================
+# Tabla de Contenidos — Jupyter Book
+# Predicción Temprana de Glosas Médicas mediante Machine Learning
+# =========================================================================
+
 format: jb-book
 root: intro
-chapters:
-  - file: notebook/01_data_exploration
+parts:
+  - caption: Trabajo de Grado
+    chapters:
+      - file: notebook/01_data_exploration
+        title: Modelo Analítico Predictivo de Glosas

@@ -1,35 +1,94 @@
-# Configuración del Jupyter Book — Predicción de Glosas Clínica Porvenir
-title: "Predicción de Glosas Médicas — Clínica Porvenir"
+# =========================================================================
+# Jupyter Book Configuration — Tesis de Maestría en Analítica de Datos
+# Universidad del Norte · 2026
+# =========================================================================
+
+title: "Predicción Temprana de Glosas Médicas mediante Machine Learning"
 author: David Florez Diaz
-copyright: "2026"
+copyright: "2026 · Universidad del Norte"
 logo: ""
 
+# -------------------------------------------------------------------------
+# Ejecución de notebooks (los outputs ya están guardados)
+# -------------------------------------------------------------------------
 execute:
   execute_notebooks: "off"
+  timeout: -1
 
+# -------------------------------------------------------------------------
+# Parser: extensiones MyST
+# -------------------------------------------------------------------------
 parse:
   myst_enable_extensions:
     - colon_fence
     - dollarmath
+    - amsmath
     - linkify
     - substitution
+    - tasklist
+    - deflist
 
+# -------------------------------------------------------------------------
+# Configuración HTML
+# -------------------------------------------------------------------------
 html:
+  favicon: ""
   use_repository_button: true
   use_issues_button: false
   use_edit_page_button: false
+  home_page_in_navbar: true
+  baseurl: "https://davdflrz.github.io/Proyecto-Glosas-CP/"
+  extra_navbar: |
+    <div>
+      Trabajo de Grado · Maestría en Analítica de Datos<br>
+      Universidad del Norte · 2026
+    </div>
+  extra_footer: |
+    <div>
+      <p>
+        Autor: <strong>David Florez Diaz</strong> ·
+        Asesor: <strong>Christian G. Quintero M.</strong><br>
+        Maestría en Analítica de Datos · División de Ingenierías · Universidad del Norte
+      </p>
+    </div>
   comments:
     hypothesis: false
 
+# -------------------------------------------------------------------------
+# Repositorio en GitHub
+# -------------------------------------------------------------------------
 repository:
   url: https://github.com/Davdflrz/Proyecto-Glosas-CP
   branch: main
+  path_to_book: ""
 
+# -------------------------------------------------------------------------
+# Botones de ejecución (Colab, Binder)
+# -------------------------------------------------------------------------
 launch_buttons:
-  notebook_interface: classic
+  notebook_interface: jupyterlab
   colab_url: "https://colab.research.google.com"
+  thebe: false
 
+# -------------------------------------------------------------------------
+# Bibliografía formal con BibTeX
+# -------------------------------------------------------------------------
+bibtex_bibfiles:
+  - references.bib
+
+# -------------------------------------------------------------------------
+# Configuración Sphinx avanzada
+# -------------------------------------------------------------------------
 sphinx:
   config:
     html_show_sourcelink: false
-    suppress_warnings: ["mystnb.unknown_mime_type"]
+    html_show_copyright: true
+    html_last_updated_fmt: "%d %B %Y"
+    suppress_warnings:
+      - "mystnb.unknown_mime_type"
+      - "mystnb.exec"
+      - "myst.header"
+    bibtex_reference_style: author_year
+    mathjax_path: "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+  extra_extensions:
+    - sphinxcontrib.bibtex
