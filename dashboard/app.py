@@ -2,10 +2,10 @@
 Dashboard Interactivo — Predicción Temprana de Glosas Médicas
 Universidad del Norte · Maestría en Analítica de Datos · 2026
 
-Diseño: sidebar lateral + KPI cards + tema corporativo (dash-bootstrap-templates).
+Diseño: sidebar colapsable + KPI cards + tema claro FLATLY.
 """
 import dash
-from dash import dcc, html, Input, Output, dash_table, callback
+from dash import dcc, html, Input, Output, State, dash_table, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,12 +19,12 @@ warnings.filterwarnings('ignore')
 # ─────────────────────────────────────────────────────────────────────
 try:
     from dash_bootstrap_templates import load_figure_template
-    load_figure_template("cyborg")
-    PLOTLY_TEMPLATE = "cyborg"
+    load_figure_template("flatly")
+    PLOTLY_TEMPLATE = "flatly"
 except ImportError:
-    PLOTLY_TEMPLATE = "plotly_dark"
+    PLOTLY_TEMPLATE = "plotly_white"
 
-DBC_THEME = dbc.themes.CYBORG  # tema profesional oscuro tipo corporativo
+DBC_THEME = dbc.themes.FLATLY  # tema claro corporativo
 
 # ─────────────────────────────────────────────────────────────────────
 # Rutas y carga de datos
@@ -77,28 +77,43 @@ app = dash.Dash(
 server = app.server
 
 # ═════════════════════════════════════════════════════════════════════
-# SIDEBAR — Navegación lateral fija
+# SIDEBAR — Navegación lateral colapsable
 # ═════════════════════════════════════════════════════════════════════
-SIDEBAR_STYLE = {
+SIDEBAR_STYLE_EXPANDED = {
     'position': 'fixed', 'top': 0, 'left': 0, 'bottom': 0,
     'width': '16rem', 'padding': '2rem 1rem',
-    'backgroundColor': '#1a1a1a',
-    'borderRight': '1px solid #333',
+    'backgroundColor': '#f8f9fa',
+    'borderRight': '1px solid #dee2e6',
     'overflowY': 'auto',
+    'transition': 'all 0.3s ease',
+    'zIndex': 1000,
 }
 
-CONTENT_STYLE = {
+SIDEBAR_STYLE_COLLAPSED = {
+    **SIDEBAR_STYLE_EXPANDED,
+    'width': '0', 'padding': '0', 'overflow': 'hidden',
+    'borderRight': 'none',
+}
+
+CONTENT_STYLE_EXPANDED = {
     'marginLeft': '17rem', 'marginRight': '1rem',
     'padding': '2rem 1rem',
+    'transition': 'all 0.3s ease',
+}
+
+CONTENT_STYLE_COLLAPSED = {
+    'marginLeft': '4rem', 'marginRight': '1rem',
+    'padding': '2rem 1rem',
+    'transition': 'all 0.3s ease',
 }
 
 sidebar = html.Div([
     html.Div([
-        html.I(className='bi bi-hospital', style={'fontSize': '2.5rem', 'color': '#0dcaf0'}),
+        html.I(className='bi bi-hospital', style={'fontSize': '2.5rem', 'color': '#1A5490'}),
     ], className='text-center mb-3'),
-    html.H5('Predicción de Glosas', className='text-white text-center fw-bold mb-1'),
+    html.H5('Predicción de Glosas', className='text-dark text-center fw-bold mb-1'),
     html.P('Clínica Porvenir', className='text-muted text-center small mb-4'),
-    html.Hr(className='border-secondary'),
+    html.Hr(className='border-light'),
     dbc.Nav([
         dbc.NavLink([html.I(className='bi bi-house-door me-2'), 'Inicio'],         href='/',             active='exact'),
         dbc.NavLink([html.I(className='bi bi-bar-chart-line me-2'), 'EDA'],         href='/eda',          active='exact'),
@@ -107,17 +122,45 @@ sidebar = html.Div([
         dbc.NavLink([html.I(className='bi bi-trophy me-2'), 'Modelo Final'],       href='/final',        active='exact'),
         dbc.NavLink([html.I(className='bi bi-check-circle me-2'), 'Conclusiones'], href='/conclusiones', active='exact'),
     ], vertical=True, pills=True, className='mb-4'),
-    html.Hr(className='border-secondary'),
+    html.Hr(className='border-light'),
     html.Div([
-        html.P('David Florez Diaz', className='text-white small fw-bold mb-0'),
+        html.P('David Florez Diaz', className='text-dark small fw-bold mb-0'),
         html.P('Tesis · Maestría 2026', className='text-muted small mb-1'),
         html.P('Universidad del Norte', className='text-muted small mb-0'),
     ], className='mt-auto'),
-], style=SIDEBAR_STYLE)
+], id='sidebar', style=SIDEBAR_STYLE_EXPANDED)
 
-content = html.Div(id='page-content', style=CONTENT_STYLE)
+toggle_btn = dbc.Button(
+    html.I(className='bi bi-list', style={'fontSize': '1.4rem'}),
+    id='sidebar-toggle',
+    color='light',
+    style={
+        'position': 'fixed', 'top': '0.75rem', 'left': '0.75rem',
+        'zIndex': 1100,
+        'border': '1px solid #dee2e6',
+        'boxShadow': '0 2px 4px rgba(0,0,0,0.08)',
+    }
+)
 
-app.layout = html.Div([dcc.Location(id='url'), sidebar, content])
+content = html.Div(id='page-content', style=CONTENT_STYLE_EXPANDED)
+sidebar_state = dcc.Store(id='sidebar-collapsed', data=False)
+
+app.layout = html.Div([dcc.Location(id='url'), sidebar_state, toggle_btn, sidebar, content])
+
+
+@callback(
+    [Output('sidebar', 'style'),
+     Output('page-content', 'style'),
+     Output('sidebar-collapsed', 'data')],
+    Input('sidebar-toggle', 'n_clicks'),
+    State('sidebar-collapsed', 'data'),
+    prevent_initial_call=True
+)
+def toggle_sidebar(n_clicks, collapsed):
+    new_state = not collapsed
+    if new_state:
+        return SIDEBAR_STYLE_COLLAPSED, CONTENT_STYLE_COLLAPSED, True
+    return SIDEBAR_STYLE_EXPANDED, CONTENT_STYLE_EXPANDED, False
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -206,38 +249,48 @@ def page_eda():
     fig_pie.update_layout(margin=dict(l=20, r=20, t=40, b=20),
                           title='Distribución de la Variable Objetivo')
 
-    # Edad
-    media_edad = df_raw['PacienteEdad'].mean()
-    fig_edad = px.histogram(df_raw, x='PacienteEdad', nbins=30,
-                            color_discrete_sequence=['#1A5490'],
-                            template=PLOTLY_TEMPLATE)
-    fig_edad.add_vline(x=media_edad, line_dash='dash', line_color='red',
-                       annotation_text=f'Media: {media_edad:.1f} años')
-    fig_edad.update_layout(title='Distribución de Edad del Paciente',
+    # Correlación
+    cols_num = ['PacienteEdad', 'Cantidad', 'ValPac', 'ValEnt', 'TotSer', 'Estado_Glosa']
+    cols_exist = [c for c in cols_num if c in df_raw.columns]
+    matriz = df_raw[cols_exist].corr(method='spearman').round(3)
+    fig_corr = px.imshow(matriz, text_auto=True, color_continuous_scale='RdBu_r',
+                         zmin=-1, zmax=1, template=PLOTLY_TEMPLATE)
+    fig_corr.update_layout(title='Matriz de Correlación de Spearman',
                            margin=dict(l=20, r=20, t=40, b=20))
 
-    # Boxplot valor
+    # Distribución de edad por Estado_Glosa (overlay, opacidad 0.6)
+    fig_edad = px.histogram(df_raw, x='PacienteEdad', nbins=30,
+                            color='Estado_Texto',
+                            color_discrete_map={'Limpia': '#28a745', 'Glosada': '#dc3545'},
+                            barmode='overlay', opacity=0.6,
+                            template=PLOTLY_TEMPLATE)
+    fig_edad.update_layout(title='Distribución de edad del paciente',
+                           legend_title_text='Estado',
+                           margin=dict(l=20, r=20, t=40, b=20))
+
+    # Boxplot valor por clase (log)
     fig_box = px.box(df_raw[df_raw['TotSer'] > 0].sample(min(10000, len(df_raw)), random_state=42),
                      x='Estado_Texto', y='TotSer', log_y=True,
                      color='Estado_Texto',
                      color_discrete_map={'Limpia': '#28a745', 'Glosada': '#dc3545'},
                      template=PLOTLY_TEMPLATE)
-    fig_box.update_layout(title='Valor del Servicio por Estado (log)',
+    fig_box.update_layout(title='¿Influye el monto de la factura en la glosa?',
+                          showlegend=False,
                           margin=dict(l=20, r=20, t=40, b=20))
 
-    # EPS
-    top10_eps = df_raw['PlanBenNombre'].value_counts().nlargest(10).index
-    df_eps = df_raw[df_raw['PlanBenNombre'].isin(top10_eps)]
-    tasa_eps = (df_eps.groupby('PlanBenNombre')['Estado_Glosa'].mean() * 100).reset_index()
-    tasa_eps.columns = ['EPS', 'Tasa']
-    tasa_eps = tasa_eps.sort_values('Tasa', ascending=False)
-    fig_eps = px.bar(tasa_eps, x='EPS', y='Tasa', color='Tasa',
-                     color_continuous_scale='RdYlGn_r', template=PLOTLY_TEMPLATE)
-    fig_eps.add_hline(y=promedio, line_dash='dash', line_color='white',
-                      annotation_text=f'Promedio: {promedio:.1f}%')
-    fig_eps.update_layout(title='Tasa de Glosa por EPS (Top 10)',
-                          xaxis_tickangle=-35,
-                          margin=dict(l=20, r=20, t=40, b=80))
+    # Top 10 motivos de glosa (NombreObjeción)
+    df_glosadas = df_raw[df_raw['Estado_Glosa'] == 1]
+    top10_motivos = (df_glosadas['NombreObjeción'].dropna()
+                     .value_counts().nlargest(10).reset_index())
+    top10_motivos.columns = ['Motivo', 'Frecuencia']
+    top10_motivos = top10_motivos.sort_values('Frecuencia', ascending=True)
+    fig_motivos = px.bar(top10_motivos, x='Frecuencia', y='Motivo',
+                         orientation='h',
+                         color_discrete_sequence=['#1A5490'],
+                         template=PLOTLY_TEMPLATE)
+    fig_motivos.update_layout(title='Top 10 motivos de glosa',
+                              margin=dict(l=20, r=20, t=40, b=20),
+                              yaxis_title='', xaxis_title='Frecuencia')
 
     # Área
     top10_area = df_raw['AreaNombre'].value_counts().nlargest(10).index
@@ -247,19 +300,29 @@ def page_eda():
     tasa_area = tasa_area.sort_values('Tasa', ascending=False)
     fig_area = px.bar(tasa_area, x='Area', y='Tasa', color='Tasa',
                       color_continuous_scale='RdYlGn_r', template=PLOTLY_TEMPLATE)
-    fig_area.add_hline(y=promedio, line_dash='dash', line_color='white')
+    fig_area.add_hline(y=promedio, line_dash='dash', line_color='#666',
+                       annotation_text=f'Promedio: {promedio:.1f}%')
     fig_area.update_layout(title='Tasa de Glosa por Área de Atención',
                            xaxis_tickangle=-35,
                            margin=dict(l=20, r=20, t=40, b=80))
 
-    # Correlación
-    cols_num = ['PacienteEdad', 'Cantidad', 'ValPac', 'ValEnt', 'TotSer', 'Estado_Glosa']
-    cols_exist = [c for c in cols_num if c in df_raw.columns]
-    matriz = df_raw[cols_exist].corr(method='spearman').round(3)
-    fig_corr = px.imshow(matriz, text_auto=True, color_continuous_scale='RdBu_r',
-                         zmin=-1, zmax=1, template=PLOTLY_TEMPLATE)
-    fig_corr.update_layout(title='Matriz de Correlación de Spearman',
-                           margin=dict(l=20, r=20, t=40, b=20))
+    caption_edad = dbc.Alert(
+        'La distribución muestra concentración en pediatría (0-5 años), '
+        'adultos jóvenes (20-35) y adultos mayores (60+), reflejando el '
+        'perfil de atención de la clínica.',
+        color='light', className='small mt-1')
+
+    caption_box = dbc.Alert(
+        'Ambos grupos presentan valores atípicos elevados que corresponden '
+        'a atenciones de alta complejidad (UCI, alto costo) y se conservan '
+        'por su relevancia financiera.',
+        color='light', className='small mt-1')
+
+    caption_motivos = dbc.Alert(
+        'La concentración de glosas en pocos motivos sugiere que '
+        'intervenciones específicas en MEDICAMENTOS y AYUDAS DIAGNÓSTICAS '
+        'tendrían el mayor impacto financiero.',
+        color='light', className='small mt-1')
 
     return html.Div([
         section_header('Análisis Exploratorio de Datos',
@@ -272,14 +335,23 @@ def page_eda():
         ], className='g-3 mb-4'),
         dbc.Row([
             dbc.Col(dcc.Loading(dcc.Graph(figure=fig_pie),  type='circle'), md=4),
-            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_edad), type='circle'), md=8),
-        ], className='g-3 mb-3'),
-        dbc.Row([
-            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_box),  type='circle'), md=4),
             dbc.Col(dcc.Loading(dcc.Graph(figure=fig_corr), type='circle'), md=8),
         ], className='g-3 mb-3'),
         dbc.Row([
-            dbc.Col(dcc.Loading(dcc.Graph(figure=fig_eps),  type='circle'), md=6),
+            dbc.Col([
+                dcc.Loading(dcc.Graph(figure=fig_edad), type='circle'),
+                caption_edad,
+            ], md=6),
+            dbc.Col([
+                dcc.Loading(dcc.Graph(figure=fig_box), type='circle'),
+                caption_box,
+            ], md=6),
+        ], className='g-3 mb-3'),
+        dbc.Row([
+            dbc.Col([
+                dcc.Loading(dcc.Graph(figure=fig_motivos), type='circle'),
+                caption_motivos,
+            ], md=6),
             dbc.Col(dcc.Loading(dcc.Graph(figure=fig_area), type='circle'), md=6),
         ], className='g-3'),
         dbc.Alert([
@@ -324,10 +396,11 @@ def page_preprocesamiento():
                     ],
                     columns=[{'name': c, 'id': c} for c in ['Columna', 'Razón']],
                     style_header={'backgroundColor': '#dc3545', 'color': 'white', 'fontWeight': 'bold'},
-                    style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
-                    style_cell={'textAlign': 'left', 'padding': '10px', 'border': '1px solid #333'},
+                    style_cell={'textAlign': 'left', 'padding': '10px'},
                 ))
-            ]), md=6),
+            ]), md=12),
+        ], className='g-3 mb-3'),
+        dbc.Row([
             dbc.Col(dbc.Card([
                 dbc.CardHeader([html.I(className='bi bi-diagram-3 me-2'), html.Strong('Pipeline metodológico')]),
                 dbc.CardBody(dcc.Markdown('''
@@ -341,7 +414,7 @@ def page_preprocesamiento():
 
 **4. Evaluación final** sobre el conjunto de prueba intacto.
                 '''))
-            ]), md=6),
+            ]), md=12),
         ], className='g-3 mb-3'),
         dbc.Card([
             dbc.CardHeader([html.I(className='bi bi-check2-square me-2'), html.Strong('Decisiones metodológicas conscientes')]),
@@ -369,8 +442,7 @@ def page_modelos():
                 dcc.Dropdown(
                     id='metrica-dropdown',
                     options=[{'label': m, 'value': m} for m in ['AUC-ROC', 'F1-Macro', 'Accuracy', 'Precision', 'Recall']],
-                    value='AUC-ROC', clearable=False,
-                    style={'color': '#000'}),
+                    value='AUC-ROC', clearable=False),
             ], md=4),
         ], className='mb-3'),
         dcc.Loading(dcc.Graph(id='grafico-modelos'), type='circle'),
@@ -380,13 +452,12 @@ def page_modelos():
                 data=MODELOS.round(4).to_dict('records'),
                 columns=[{'name': c, 'id': c} for c in MODELOS.columns],
                 style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
-                style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
-                style_cell={'textAlign': 'left', 'padding': '10px', 'border': '1px solid #333'},
+                style_cell={'textAlign': 'left', 'padding': '10px'},
                 style_data_conditional=[
                     {'if': {'filter_query': '{Modelo} = "10. WOA-XGBoost"'},
-                     'backgroundColor': '#1A3A5C', 'fontWeight': 'bold', 'color': '#7EC8E3'},
+                     'backgroundColor': '#D6E4F0', 'fontWeight': 'bold', 'color': '#1A5490'},
                     {'if': {'filter_query': '{Modelo} = "9. XGBoost"'},
-                     'backgroundColor': '#2C3E50'},
+                     'backgroundColor': '#E8F0F5'},
                 ],
                 sort_action='native',
             ),
@@ -413,7 +484,7 @@ def actualizar_grafico_modelos(metrica):
                       title=f'Comparativa de los 10 Modelos — {metrica}',
                       margin=dict(l=20, r=20, t=60, b=100))
     if metrica == 'AUC-ROC':
-        fig.add_hline(y=0.9, line_dash='dot', line_color='yellow',
+        fig.add_hline(y=0.9, line_dash='dot', line_color='#FF8C00',
                       annotation_text='Excelente (0.90)')
     return fig
 
@@ -481,7 +552,6 @@ hiperparámetros XGBoost durante 25 épocas (frente a 180 del GridSearch).
                     ],
                     columns=[{'name': c, 'id': c} for c in ['Parámetro', 'GridSearch', 'WOA']],
                     style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
-                    style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
                     style_cell={'textAlign': 'left', 'padding': '8px'},
                 ))
             ], className='h-100'), md=6),
@@ -557,7 +627,6 @@ artificialmente al ~0.95 (overfitting al nivel de ingreso).
                 ],
                 columns=[{'name': c, 'id': c} for c in ['Limitación', 'Mitigación']],
                 style_header={'backgroundColor': '#1A5490', 'color': 'white', 'fontWeight': 'bold'},
-                style_data={'backgroundColor': '#1a1a1a', 'color': 'white'},
                 style_cell={'textAlign': 'left', 'padding': '10px'},
             ))
         ], className='mb-3'),
