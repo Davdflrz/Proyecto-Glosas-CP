@@ -198,7 +198,7 @@ def page_inicio():
             'Trabajo de Grado · Maestría en Analítica de Datos · Universidad del Norte · 2026'
         ),
         dbc.Row([
-            dbc.Col(kpi_card('Registros del dataset', '88,480',     'Ítems de facturación', 'info',    'bi-collection'),     md=3),
+            dbc.Col(kpi_card('Registros del dataset', '88480',     'Ítems de facturación', 'info',    'bi-collection'),     md=3),
             dbc.Col(kpi_card('Tasa de glosa',         '44%',        'Balance natural sin SMOTE',     'danger',  'bi-percent'),         md=3),
             dbc.Col(kpi_card('Modelos evaluados',     '10',         'De Dummy a WOA-XGBoost',         'warning', 'bi-cpu'),             md=3),
             dbc.Col(kpi_card('Recall del modelo final','81.4%',     'WOA-XGBoost · F1=0.8044',        'success', 'bi-trophy'),          md=3),
@@ -328,7 +328,7 @@ def page_eda():
         section_header('Análisis Exploratorio de Datos',
                        'Univariado, bivariado y correlaciones sobre el dataset unificado'),
         dbc.Row([
-            dbc.Col(kpi_card('Registros', '88,480',     '45 columnas',      'info',    'bi-database'),     md=3),
+            dbc.Col(kpi_card('Registros', '88480',     '45 columnas',      'info',    'bi-database'),     md=3),
             dbc.Col(kpi_card('Limpias',   '49,525',     '56% del total',    'success', 'bi-check'),        md=3),
             dbc.Col(kpi_card('Glosadas',  '38,955',     '44% del total',    'danger',  'bi-x'),            md=3),
             dbc.Col(kpi_card('Edad media','40 años',    'Mediana: 31 años', 'warning', 'bi-person'),       md=3),
